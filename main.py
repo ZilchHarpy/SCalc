@@ -1,4 +1,13 @@
 from src.utils import *
+'''
+Funções usadas de utils:
+- calcular_media(lista)
+- calcular_desvio_padrao(lista)
+- calcular_erro_estatistico(lista)
+- calcular_erro_total(lista, erro_sistematico)
+- LinLog(t, y)
+- PlotarGrafico(pontos, erros_x, erros_y)
+'''
 
 if __name__ == "__main__":
 
