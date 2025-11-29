@@ -55,4 +55,37 @@ if __name__ == "__main__":
     #print(dados_excel)
 
     # Salvar a tabela atualizada em um novo arquivo Excel
-    dados_excel.to_excel("src/data/ExFISMEC_MRU_resultados.xlsx", index=False)
+    dados_excel.to_excel(path, index=False)
+
+    # Preparar dados para plotagem
+    '''
+        Eixos:
+        ln(t_medio)
+        ln(d)
+
+        Equação da reta:
+        ln(d) = k ln(t_medio) + b, onde:
+        k é o coeficiente angular
+        b é o coeficiente linear
+
+        erros:
+        ln(terr_total)
+        ln(derr)
+    '''
+
+    # linearização logarítmica dos dados
+    t_log, d_log, k, ln_b = LinLog(t_medio, dados_excel['d'][:len(t_medio)].tolist())
+
+    # calcular erros logarítmicos no estilo k +/- kerr
+    terr_log = [terr / t for terr, t in zip(terr_total, t_medio)]
+    derr_log = [derr / d for derr, d in zip(dados_excel['derr'][:len(t_medio)].tolist(), dados_excel['d'][:len(t_medio)].tolist())]
+
+    # preparar pontos para plotagem
+    pontos = list(zip(t_log, d_log))
+    erros_x = terr_log
+    erros_y = derr_log
+
+    # plotar gráfico com barras de erro
+    PlotarGrafico(pontos, erros_x, erros_y, k, ln_b)
+    print(f"\nCoeficiente angular (k): {k}")
+    print(f"Coeficiente linear (ln(b)): {ln_b}")

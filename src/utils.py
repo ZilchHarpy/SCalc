@@ -46,7 +46,7 @@ def LinLog(t, y):
     n, ln_k = np.polyfit(t_log, y_log, 1)
     return t_log, y_log, n, ln_k
 
-def PlotarGrafico(pontos, erros_x, erros_y):
+def PlotarGrafico(pontos, erros_x, erros_y, n, ln_k):
     plt.style.use('_mpl-gallery')
 
     x, y = zip(*pontos)
@@ -54,9 +54,15 @@ def PlotarGrafico(pontos, erros_x, erros_y):
     # Criar o gráfico com barras de erro
     fig, ax = plt.subplots()
     ax.errorbar(x, y, xerr=erros_x, yerr=erros_y, fmt='o', ecolor='red', capsize=5)
-    
+
+    # Adicionar a melhor reta
+    x_fit = np.linspace(min(x), max(x), 100)
+    y_fit = n * x_fit + ln_k
+    ax.plot(x_fit, y_fit, color='blue', label='Melhor Reta')
+    ax.legend()
+
     # Configurações do gráfico
-    ax.set_title('Error Bar Plot')
+    ax.set_title('Error Bar Plot with Best Fit Line')
     ax.set(xlim=(min(x) - 1, max(x) + 1), xticks=np.arange(min(x), max(x) + 2),
            ylim=(min(y) - 1, max(y) + 1), yticks=np.arange(min(y), max(y) + 2))
 
