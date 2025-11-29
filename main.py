@@ -18,66 +18,41 @@ if __name__ == "__main__":
     dados_excel = pd.read_excel(path)
 
     # mostrar tabela
-    print(dados_excel)
+    #print(dados_excel)
 
-    # lista float para armazenar os tempos médios
-    tempos = []
+    # Inicializar listas e constantes para armazenar os tempos médios e erros
+    t_medio = []
+    terr_est = []
+    terr_total = []
+    erro_instrumental = float(dados_excel['terr_instr'][0])  # assumindo que o erro instrumental é o mesmo para todas as medições
 
     # Calcular tempo medio das colunas t1, t2, t3 e calcular erro associado
     for index, row in dados_excel.iterrows():
-        # se contiver elementos NaN, pular o c
+        # se contiver elementos NaN, pular o ciclo
         if(pd.isna(row['t1']) or pd.isna(row['t2']) or pd.isna(row['t3'])):
             continue
         else:
             t1 = float(row['t1'])
             t2 = float(row['t2'])
             t3 = float(row['t3'])
+
             media_tempo = calcular_media([t1, t2, t3])
-            tempos.append(media_tempo)
+            erro_estatistico_tempo = calcular_erro_estatistico([t1, t2, t3])
+            erro_total_tempo = calcular_erro_total([t1, t2, t3], erro_instrumental)
 
-    # Calcular erro estatístico e total dos tempos com base na coluna terr_instr
-    erro_instr = float(dados_excel['terr_instr'][0])  # assumindo que o erro instrumental é o mesmo para todas as medições
-    erro_estatistico_tempos = calcular_erro_estatistico(tempos)
-    erro_total_tempos = calcular_erro_total(tempos, erro_instr)
-
-
-    # Escrever tempos médios, tempos totais e erros na tabela4
-    dados_excel['t_medio'] = pd.Series(tempos)
-    dados_excel['terr_est'] = erro_estatistico_tempos
-    dados_excel['terr_total'] = erro_total_tempos
-
-    #print(f"tempos medios: {tempos}")
-    #print(f"Erro estatístico dos tempos: {erro_estatistico_tempos:.4f}")
-    #print(f"Erro total dos tempos: {erro_total_tempos:.4f}")
-
-    print("\nTabela com tempos médios e erros:")
-    print(dados_excel)
-
-    
+            # Armazenar os resultados nas listas
+            t_medio.append(media_tempo)
+            terr_est.append(erro_estatistico_tempo)
+            terr_total.append(erro_total_tempo)
 
 
+    # Escrever tempos médios, tempos totais e erros na tabela, com 4 casas decimais
+    dados_excel.loc[:len(t_medio)-1, 't_medio'] = [round(val, 4) for val in t_medio]
+    dados_excel.loc[:len(terr_est)-1, 'terr_est'] = [round(val, 4) for val in terr_est]
+    dados_excel.loc[:len(terr_total)-1, 'terr_total'] = [round(val, 4) for val in terr_total]
 
-    '''
-    # Entrada de dados pelo usuário
-    dados = [float(x) for x in input("Digite os dados separados por vírgula: ").replace(" ", "").split(",")]
-    erro_sistematico = float(input("Digite o erro sistemático: "))
+    #print("\nTabela com tempos médios e erros:")
+    #print(dados_excel)
 
-    Imprime para o usuario uma tabela com os resultados no seguinte formato:
-    Xi +/- Erro Sistematico
-    ...
-    Xn +/- Erro Sistematico
-
-    Valor médio: j
-    Erro Estatístico: k
-    Erro Total: m
-    print("\nResultados (mm):")
-    for valor in dados:
-        print(f"{valor:.2f} +/- {erro_sistematico:.4f}")
-    
-    erro_estatistico = calcular_erro_estatistico(dados)
-    erro_total = calcular_erro_total(dados, erro_sistematico)   
-
-    print(f"\nValor médio: {calcular_media(dados):.4f}")
-    print(f"Erro Estatístico: {erro_estatistico:.4f}")
-    print(f"Erro Total: {erro_total:.4f}")
-    '''
+    # Salvar a tabela atualizada em um novo arquivo Excel
+    dados_excel.to_excel("src/data/ExFISMEC_MRU_resultados.xlsx", index=False)
