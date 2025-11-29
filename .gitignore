@@ -1,6 +1,6 @@
 .venv/
 tests/
-src/__pycache__/
+*__pycache__/
 *.pyc
 .DS_Store
-src/data/*.xlsx
+*.xlsx
