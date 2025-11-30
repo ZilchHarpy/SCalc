@@ -4,3 +4,4 @@ tests/
 *.pyc
 .DS_Store
 *.xlsx
+testes/

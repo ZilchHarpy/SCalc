@@ -1,24 +1,17 @@
-from src.utils import *
+from src.utils import calcular_media
+from src.utils import calcular_erro_estatistico
+from src.utils import calcular_erro_total
+from src.utils import LinLog
+from src.utils import PlotarGrafico
+
 import pandas as pd
-'''
-Funções usadas de utils:
-- calcular_media(lista)
-- calcular_desvio_padrao(lista)
-- calcular_erro_estatistico(lista)
-- calcular_erro_total(lista, erro_sistematico)
-- LinLog(t, y)
-- PlotarGrafico(pontos, erros_x, erros_y)
-'''
 
 if __name__ == "__main__":
 
-    path = "src/data/ExFISMEC_MRU.xlsx"
+    path = "src/data/TBTeste.xlsx"
 
     # Leitura dos dados do arquivo Excel
     dados_excel = pd.read_excel(path)
-
-    # mostrar tabela
-    #print(dados_excel)
 
     # Inicializar listas e constantes para armazenar os tempos médios e erros
     t_medio = []
@@ -57,22 +50,8 @@ if __name__ == "__main__":
     # Salvar a tabela atualizada em um novo arquivo Excel
     dados_excel.to_excel(path, index=False)
 
+
     # Preparar dados para plotagem
-    '''
-        Eixos:
-        ln(t_medio)
-        ln(d)
-
-        Equação da reta:
-        ln(d) = k ln(t_medio) + b, onde:
-        k é o coeficiente angular
-        b é o coeficiente linear
-
-        erros:
-        ln(terr_total)
-        ln(derr)
-    '''
-
     # linearização logarítmica dos dados
     t_log, d_log, k, ln_b = LinLog(t_medio, dados_excel['d'][:len(t_medio)].tolist())
 
@@ -86,6 +65,7 @@ if __name__ == "__main__":
     erros_y = derr_log
 
     # plotar gráfico com barras de erro
-    PlotarGrafico(pontos, erros_x, erros_y, k, ln_b)
+    #PlotarGrafico(pontos, erros_x, erros_y, k, ln_b)
     print(f"\nCoeficiente angular (k): {k}")
     print(f"Coeficiente linear (ln(b)): {ln_b}")
+    
