@@ -94,3 +94,32 @@ def contar_index_listas(listas):
         i = pos
 
     return numeros
+
+# Particiona a tabela em dicionarios de dados e erros e os retorna
+def Particionar(tabela):
+#  Remover linhas e colunas vazias
+    tabela = tabela.dropna(how='all', axis=0)
+    tabela = tabela.dropna(how='all', axis=1)
+
+    # Separa os erros dos dados da tabela
+    erros_list = []
+    dados_brutos_list = []
+
+    for coluna in tabela.columns:
+        if 'err_instr' in str(coluna).lower():
+            erros_list.append(coluna)
+        else:
+            dados_brutos_list.append(coluna)
+
+    # Cria dicionarios com as listas
+    erros = {}
+    dados_brutos = {}
+
+    for coluna in dados_brutos_list:
+        if 'medida' not in str(coluna).lower():
+            dados_brutos[coluna] = tabela[coluna].dropna().tolist()
+
+    for coluna in erros_list:
+        erros[coluna] = tabela[coluna].dropna().tolist()
+
+    return dados_brutos, erros
