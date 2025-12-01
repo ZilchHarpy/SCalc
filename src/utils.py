@@ -71,21 +71,15 @@ def PlotarGrafico(pontos, erros_x, erros_y, n, ln_k):
 # Conta a quantidade de dados diferentes e retorna em uma lista seguindo a transformação de exemplo:
 # [y1,y2,y3,x1,x2,w1,w2] --> [1,2,3,1,2,1,2] --> [3,2,2]
 def contar_dados(data):
-    # data = [y1,y2,y3,x1,x2,w1,w2]
-
-    lista = {}
-
-    # data --> lista = [1,2,3,1,2,1,2]
-    for column in data.columns:
-        lista[column] = data[column].dropna().astype(float).tolist()
-
+    # data.keys() = [y1,y2,y3,x1,x2,w1,w2]
     numeros = []
 
-    # lista --> numeros = [3,2,2]
-    for chave in lista.keys():
+    # data.keys() --> numeros = [1,2,3,1,2,1,2]
+    for chave in data.keys():
         numero = ''.join(filter(str.isdigit, chave))
         numeros.append(int(numero))
     
+    # numeros --> qnt_data = [3,2,2]
     cnt_num = []
     pos = 0
     i = 0
