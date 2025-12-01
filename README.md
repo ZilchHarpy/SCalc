@@ -52,8 +52,9 @@ python scalc.py
 SCalc/
 ├── scalc.py              # Arquivo principal
 ├── requirements.txt      # Dependências do projeto
-├── .gitignore           # Arquivos ignorados pelo Git
-└── README.md            # Documentação
+├── .gitignore            # Arquivos ignorados pelo Git
+├── LICENSE               # Licensa MIT
+└── README.md             # Documentação
 ```
 
 ## 🛠️ Tecnologias Utilizadas
