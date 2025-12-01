@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import defaultdict
+import re
 
-# Calculo da média de uma lista de números
+# Calculo da média de uma lista de números (função defesada)
 def calcular_media(lista):
     for i in range(len(lista)):
         lista[i] = float(lista[i])
@@ -120,3 +122,30 @@ def Particionar(tabela):
         erros[coluna] = tabela[coluna].dropna().tolist()
 
     return dados_brutos, erros
+
+# Calcula a média dos dados gerados de uma tabela excel e retorna um dicionario com os valores
+def Calcular_Media(dados_brutos):
+
+    # Conta a quantidade de cada dado para calculo da média
+    qnt_dados = contar_dados(dados_brutos)
+    aux = {}
+
+    medias = {}
+    tmp = defaultdict(list)
+
+    # Agrupa as listas por letra
+    for chave, valores in dados_brutos.items():
+        letras = re.match(r'([a-zA-Z]+)', chave)
+        if letras:
+            indice = letras.group(1)
+            tmp[indice].append(valores)
+    
+    # Referencia um dicionario para qnt_dados
+    for i, chave in enumerate(tmp.keys()):
+        aux[chave] = qnt_dados[i]
+    
+    # Calcula a média dos elementos
+    for chave, listas in tmp.items():
+        medias[chave] = [float(sum(x)) / float(aux[chave]) for x in zip(*listas)]
+
+    return medias
