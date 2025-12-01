@@ -68,18 +68,21 @@ def PlotarGrafico(pontos, erros_x, erros_y, n, ln_k):
 
     plt.show()
 
-# Separar as colunas das medições em listas de listas de floats tal que as listas y1, y2, y3, .., yi façam parte de uma lista e x1, x2, .., xi façam parte de outra lista e assim por diante até o fim da tabela
-def separar_colunas(dados_excel):
-    listas = {}
-    for column in dados_excel.columns:
-        listas[column] = dados_excel[column].dropna().astype(float).tolist()
-    return listas
+# Conta a quantidade de dados diferentes e retorna em uma lista seguindo a transformação de exemplo:
+# [y1,y2,y3,x1,x2,w1,w2] --> [1,2,3,1,2,1,2] --> [3,2,2]
+def contar_dados(data):
+    # data = [y1,y2,y3,x1,x2,w1,w2]
 
-# Conta os indices das listas no formato [1,2,3,1,2,1,2,3,1] = [3,2,3,1]
-def contar_index_listas(listas):
+    lista = {}
+
+    # data --> lista = [1,2,3,1,2,1,2]
+    for column in data.columns:
+        lista[column] = data[column].dropna().astype(float).tolist()
+
     numeros = []
 
-    for chave in listas.keys():
+    # lista --> numeros = [3,2,2]
+    for chave in lista.keys():
         numero = ''.join(filter(str.isdigit, chave))
         numeros.append(int(numero))
     
