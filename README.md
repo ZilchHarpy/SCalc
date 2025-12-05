@@ -50,6 +50,12 @@ python scalc.py
 
 ```
 SCalc/
+├── src/                  # Pasta fonte
+    ├── analysis/         # Pasta de análises estatísticas (ainda não elaborada)
+    ├── data/             # Pasta onde os arquivos das tabelas xlsx ficam armazenados
+    ├── models/           # Pasta onde os modelos estatísticos gerados ficam armazenados (ainda não elaborada)
+    ├── visualization/    # Pasta de visualização (ainda não elaborada)
+    ├── utils.py          # Arquivo de funções utilitárias
 ├── scalc.py              # Arquivo principal
 ├── requirements.txt      # Dependências do projeto
 ├── .gitignore            # Arquivos ignorados pelo Git
@@ -60,18 +66,19 @@ SCalc/
 ## 🛠️ Tecnologias Utilizadas
 
 - **Python**: Linguagem principal
-- **openpyxl/pandas**: Manipulação de arquivos Excel
-- **matplotlib/seaborn**: Geração de gráficos estatísticos
-- **numpy**: Cálculos numéricos e estatísticos
+- **Pandas**: Manipulação de arquivos Excel
+- **Matplotlib**: Geração de gráficos estatísticos
+- **Numpy**: Cálculos numéricos e estatísticos
 
 ## 📈 Exemplo de Uso
 
-1. Prepare seu arquivo Excel com os dados
-2. Execute o programa
-3. Selecione o arquivo de entrada
-4. Aguarde o processamento
-5. Visualize os gráficos gerados
-6. Confira a planilha de saída com os resultados
+1. Prepare seu arquivo Excel com os dados seguindo o padrão fornecido;
+2. Execute o programa;
+3. Selecione o arquivo de entrada;
+4. Aguarde o processamento;
+5. Visualize os gráficos gerados;
+6. Gere a planilha de saída com os resultados;
+7. Finalize a execução.
 
 ## 🤝 Contribuindo
 
@@ -89,7 +96,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 ## 👤 Autor
 
-**ZilchHarpy**
+**Caio Aquilino Merino**
 
 - GitHub: [@ZilchHarpy](https://github.com/ZilchHarpy)
 - Email: caioaquilinomerino@gmail.com
