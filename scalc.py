@@ -10,3 +10,10 @@ if __name__ == "__main__":
     dados_excel = pd.read_excel(path)
 
     print(dados_excel)
+
+    medias, err_est, err_instr = Calcular_Estatisticas(dados_excel)
+
+    # Adicionar opções:
+    # 1. Gerar nova planilha
+    # 2. Adicionar dados na planilha atual
+    # 3. Sair
