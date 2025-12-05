@@ -1,0 +1,5 @@
+{
+    "powerquery.client.additionalSymbolsDirectories": [
+        "/home/caio/Programs/Python/scalc/.vscode/excel-pq-symbols"
+    ]
+}
