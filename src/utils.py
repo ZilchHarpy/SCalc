@@ -1,11 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
+import pandas as pd
 import re
 import math
 
 # Calcula a media, erro estatistico e erro total. Retorna uma tupla com esses parametros
-def Calcular_Estatisticas(tabela):
+def Calcular_Estatisticas(tabela:pd.DataFrame):
 
     dados_brutos, erros_instr = Particionar(tabela)
 
@@ -29,7 +30,7 @@ def Calcular_Estatisticas(tabela):
         aux[chave] = len(listas)
 
     # Extrai erros instrumentais e mapeia para as keys corretas
-    for chave_err, valores_err in erros_instrumentais.items():
+    for chave_err, valores_err in erros_instr.items():
         match = re.match(r'([a-zA-Z]+)err_instr', chave_err)
         if match:
             letra = match.group(1)
@@ -39,7 +40,7 @@ def Calcular_Estatisticas(tabela):
     for chave, listas in tmp.items():
         medias[chave] = [float(sum(x)) / float(aux[chave]) for x in zip(*listas)]
 
-    # Calcula o erro padrão da média (Standard Error of the Mean)
+    # Calcula o erro padrão da média
     for chave, listas in tmp.items():
         n = aux[chave]  # número de parâmetros (colunas)
         erros = []
@@ -87,7 +88,7 @@ def Calcular_Estatisticas(tabela):
 # ---------------------------------------------------------------------------
 
 # Particiona a tabela em dicionarios de dados e erros e os retorna
-def Particionar(tabela):
+def Particionar(tabela:pd.DataFrame):
 #  Remover linhas e colunas vazias
     tabela = tabela.dropna(how='all', axis=0)
     tabela = tabela.dropna(how='all', axis=1)
@@ -116,8 +117,33 @@ def Particionar(tabela):
     return dados_brutos, erros
 # ---------------------------------------------------------------------------
 
+def RegLin(x:list[float], y:list[float]):
+
+    # Calculo das medias
+    x_mean = np.mean(x)
+    y_mean = np.mean(y)
+
+    # Calculo do desvio padrao
+    sd_x = np.std(x, ddof=1)
+    sd_y = np.std(y, ddof=1)
+
+    # Calculo da correlacao R
+    R = np.corrcoef(x,y)[0,1]
+
+    # Calculo do coeficiente angular
+    m = (R*sd_y)/sd_x
+
+    # Calculo do coeficiente linear
+    b = y_mean - m * x_mean
+
+    new_y = b + m * x
+    pontos = {x, new_y}
+
+    return pontos
+# ---------------------------------------------------------------------------
+
 # Plota o grafico linearizado
-def PlotarGrafico(pontos, erros_x, erros_y, n, ln_k):
+def PlotarGrafico(pontos:set, erros_x:list, erros_y:list, str_x:str, str_y:str, titulo:strs):
     plt.style.use('_mpl-gallery')
 
     x, y = zip(*pontos)
@@ -126,14 +152,16 @@ def PlotarGrafico(pontos, erros_x, erros_y, n, ln_k):
     fig, ax = plt.subplots()
     ax.errorbar(x, y, xerr=erros_x, yerr=erros_y, fmt='o', ecolor='red', capsize=5)
 
-    # Adicionar a melhor reta
+    # Definir precisao de plotagem
     x_fit = np.linspace(min(x), max(x), 100)
-    y_fit = n * x_fit + ln_k
+    y_fit = np.linspace(min(y), max(y), 100)
     ax.plot(x_fit, y_fit, color='blue', label='Melhor Reta')
     ax.legend()
 
     # Configurações do gráfico
-    ax.set_title('Error Bar Plot with Best Fit Line')
+    ax.set_title(titulo)
+    ax.set_xlabel(str_x)
+    ax.set_ylabel(str_y)
     ax.set(xlim=(min(x) - 1, max(x) + 1), xticks=np.arange(min(x), max(x) + 2),
            ylim=(min(y) - 1, max(y) + 1), yticks=np.arange(min(y), max(y) + 2))
 
