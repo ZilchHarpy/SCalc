@@ -2,21 +2,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import pandas as pd
+from scipy.stats import linregress
 import re
 import math
 
 # Calcula a media, erro estatistico e erro total. Retorna uma tupla com esses parametros
 def Calcular_Estatisticas(tabela:pd.DataFrame):
 
+    # Particiona os dados brutos e erros instrumentais
     dados_brutos, erros_instr = Particionar(tabela)
 
+    # Inicializa dicionarios de resultados
     medias = {}
     erros_est = {}
     erros_instrumentais = {}
     erros_totais = {}
-
-    tmp = defaultdict(list)
     aux = {}
+    tmp = defaultdict(list)
+    
 
     # Agrupa as listas por letra
     for chave, valores in dados_brutos.items():
@@ -118,43 +121,33 @@ def Particionar(tabela:pd.DataFrame):
 # ---------------------------------------------------------------------------
 
 def RegLin(x:list[float], y:list[float]):
+    # Realiza a regressão linear usando scipy.stats.linregress
+    slope, intercept, r_value, p_value, std_err = linregress(x, y)
 
-    # Calculo das medias
-    x_mean = np.mean(x)
-    y_mean = np.mean(y)
-
-    # Calculo do desvio padrao
-    sd_x = np.std(x, ddof=1)
-    sd_y = np.std(y, ddof=1)
-
-    # Calculo da correlacao R
-    R = np.corrcoef(x,y)[0,1]
-
-    # Calculo do coeficiente angular
-    m = (R*sd_y)/sd_x
-
-    # Calculo do coeficiente linear
-    b = y_mean - m * x_mean
-
-    new_y = b + m * x
-    pontos = {x, new_y}
-
-    return pontos
+    '''
+    slope: coeficiente angular (m)
+    intercept: coeficiente linear (b)
+    r_value: coeficiente de correlação (r)
+    p_value: valor p para testar a hipótese nula
+    std_err: erro padrão da estimativa do coeficiente angular
+    '''
+    
+    return slope, intercept, r_value**2
 # ---------------------------------------------------------------------------
 
-# Plota o grafico linearizado
-def PlotarGrafico(pontos:set, erros_x:list, erros_y:list, str_x:str, str_y:str, titulo:strs):
+# Plota o grafico de dispersão com barras de erro
+def PlotarGrafico(pontos:set, erros_x:list, erros_y:list, str_x:str, slope:float, intercept:float, str_y:str, titulo:str):
     plt.style.use('_mpl-gallery')
 
     x, y = zip(*pontos)
 
-    # Criar o gráfico com barras de erro
+    # Criar o gráfico e plotar barras de erro
     fig, ax = plt.subplots()
     ax.errorbar(x, y, xerr=erros_x, yerr=erros_y, fmt='o', ecolor='red', capsize=5)
 
-    # Definir precisao de plotagem
+    # Plotar a melhor reta
     x_fit = np.linspace(min(x), max(x), 100)
-    y_fit = np.linspace(min(y), max(y), 100)
+    y_fit = slope * x_fit + intercept
     ax.plot(x_fit, y_fit, color='blue', label='Melhor Reta')
     ax.legend()
 
@@ -162,7 +155,7 @@ def PlotarGrafico(pontos:set, erros_x:list, erros_y:list, str_x:str, str_y:str, 
     ax.set_title(titulo)
     ax.set_xlabel(str_x)
     ax.set_ylabel(str_y)
-    ax.set(xlim=(min(x) - 1, max(x) + 1), xticks=np.arange(min(x), max(x) + 2),
-           ylim=(min(y) - 1, max(y) + 1), yticks=np.arange(min(y), max(y) + 2))
+    ax.set(xlim=(min(x) - 0.1*min(x), max(x) + 0.1*max(x)), xticks=np.arange(min(x), max(x) + 5),
+           ylim=(min(y) - 0.1*max(y), max(y) + 0.1*max(y)), yticks=np.arange(min(y), max(y) + 5))
 
     plt.show()
