@@ -208,8 +208,6 @@ Incluído:
 
 ## 🔮 Possíveis Extensões Futuras
 
-Ideias para você implementar:
-
 1. **Editor de dados** dentro da interface
 2. **Múltiplas regressões** em um só gráfico
 3. **Exportação para LaTeX** das equações

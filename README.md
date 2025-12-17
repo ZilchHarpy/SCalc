@@ -87,6 +87,33 @@ python scalc.py --cli \
 - `--y-label`: Label do eixo Y (padrão: "log(d) [mm]")
 - `--titulo`: Título do gráfico
 
+## 📢 Dicas e recomendações
+
+**As recomendações a seguir foram baseadas visando possíveis imprevistos**
+
+### Arquivo `PROJETO_COMPLETO.md`
+
+Neste arquivo reside detalhes da estrutura do projeto e comandos de auxílio com várias especificações que não foram tratadas neste
+
+### Criação de um ambiente python
+
+Criando o ambiente:
+
+```bash
+python -m venv .venv
+```
+
+Ativando o ambiente:
+
+- Windows:
+```bash
+venv\Scripts\activate
+```
+- Linux/macOS:
+```bash
+source venv/bin/activate
+```
+
 ### Ajuda
 
 Para ver todas as opções disponíveis:
@@ -139,7 +166,7 @@ Exemplo:
 - Ferramentas interativas (zoom, pan, salvar)
 - Exportação em diversos formatos (PNG, PDF, SVG, EPS)
 
-## 📁 Estrutura do Projeto
+## 📁 Estrutura central do Projeto
 
 ```
 scalc/
@@ -149,6 +176,8 @@ scalc/
 │   ├── visualisation.py    # Interface gráfica
 │   └── data/
 │       └── TBTeste.xlsx    # Arquivo de exemplo
+├── GUIA_VISUAL.md          # Arquivo guia na utilização do software
+├── PROJETO_COMPLETO        # Arquivo mais detalhado sobre a estrutura do projeto
 └── README.md               # Este arquivo
 ```
 
@@ -239,6 +268,8 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 Se encontrar algum problema ou tiver sugestões, abra uma [issue](https://github.com/ZilchHarpy/SCalc/issues) no GitHub.
 
 ---
+## 🤖 IA
 
-**Desenvolvido com ❤️ usando Python, PySide6 e Matplotlib**
+Neste projeto foram usadas ferramentas de inteligência artificial para auxílio de escrita dos arquivos 'markdown e o arquivo de dependências  'requirements.txt'
+
 ⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!
