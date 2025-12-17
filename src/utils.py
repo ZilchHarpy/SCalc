@@ -146,8 +146,10 @@ def PlotarGrafico(pontos:set, erros_x:list, erros_y:list, str_x:str, slope:float
     ax.errorbar(x, y, xerr=erros_x, yerr=erros_y, fmt='o', ecolor='red', capsize=5)
 
     # Plotar a melhor reta
-    x_fit = np.linspace(min(x), max(x), 100)
+    x_fit = np.linspace(min(x)-0.05*min(x), max(x)+0.05*max(x), 500)
     y_fit = slope * x_fit + intercept
+    arx_fit = [round(num) for num in x_fit]
+    ary_fit = [round(num) for num in y_fit]
     ax.plot(x_fit, y_fit, color='blue', label='Melhor Reta')
     ax.legend()
 
@@ -155,7 +157,7 @@ def PlotarGrafico(pontos:set, erros_x:list, erros_y:list, str_x:str, slope:float
     ax.set_title(titulo)
     ax.set_xlabel(str_x)
     ax.set_ylabel(str_y)
-    ax.set(xlim=(min(x) - 0.1*min(x), max(x) + 0.1*max(x)), xticks=np.arange(min(x), max(x) + 5),
-           ylim=(min(y) - 0.1*max(y), max(y) + 0.1*max(y)), yticks=np.arange(min(y), max(y) + 5))
+    ax.set(xlim=(min(arx_fit) - 0.05*min(arx_fit), max(arx_fit) + 0.05*max(arx_fit)), xticks=np.arange(min(arx_fit), max(arx_fit) + 1),
+           ylim=(min(ary_fit) - 0.05*max(ary_fit), max(ary_fit) + 0.05*max(ary_fit)), yticks=np.arange(min(ary_fit), max(ary_fit) + 1))
 
     plt.show()

@@ -1,103 +1,236 @@
-# SCalc - Calculadora Estatística e Gráfica
+# SCalc - Sistema de Cálculo e Análise de Regressão Linear
 
-Uma ferramenta para análise estatística de dados em arquivos Excel, com geração automática de tabelas e gráficos.
+Sistema completo para análise estatística e regressão linear com interface gráfica intuitiva.
 
-## 📊 Funcionalidades
+## 📋 Características
 
-- **Leitura de arquivos Excel (.xlsx)**: Importa dados de planilhas existentes
-- **Processamento estatístico**: Calcula estatísticas descritivas dos dados
-- **Exportação de resultados**: Gera novas planilhas com os dados processados
-- **Visualização gráfica**: Cria gráficos estatísticos para análise visual dos dados
+- ✅ Interface gráfica moderna com PySide6
+- ✅ Visualização interativa com Matplotlib
+- ✅ Cálculo automático de médias e erros estatísticos
+- ✅ Regressão linear com coeficiente de determinação (R²)
+- ✅ Gráficos com barras de erro
+- ✅ Exportação de gráficos (PNG, PDF, SVG)
+- ✅ Modo CLI para processamento em lote
+- ✅ Suporte a arquivos Excel (.xlsx, .xls)
 
-## 🚀 Como Usar
+## 🚀 Instalação
 
-### Pré-requisitos
+### Requisitos
 
-- Python 3.x
-- Bibliotecas necessárias (instale com o comando abaixo)
+- Python 3.8 ou superior
+
+### Instalar dependências
+
+```bash
+pip install PySide6 matplotlib numpy pandas scipy openpyxl
+```
+
+Ou use o arquivo requirements.txt (se disponível):
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Instalação
+## 📖 Como Usar
 
-1. Clone o repositório:
-```bash
-git clone https://github.com/ZilchHarpy/SCalc.git
-cd SCalc
-```
+### Modo 1: Interface Gráfica (GUI) - Recomendado
 
-2. Crie e ative o ambiente virtual:
-```bash
-python -m venv .venv
-.venv\Scripts\Activate.ps1  # Windows
-source .venv/bin/activate    # Linux/Mac
-```
-
-3. Instale as dependências:
-```bash
-pip install -r requirements.txt
-```
-
-### Execução
+Execute o programa sem argumentos para abrir a interface gráfica:
 
 ```bash
 python scalc.py
 ```
 
+Ou explicitamente:
+
+```bash
+python scalc.py --gui
+```
+
+#### Passo a passo na interface:
+
+1. **Carregar Arquivo**: Clique em "📁 Selecionar Arquivo Excel"
+2. **Calcular Estatísticas**: Clique em "🔢 Calcular Estatísticas"
+3. **Selecionar Variáveis**: Escolha as variáveis X e Y nos dropdowns
+4. **Calcular Regressão**: Clique em "📈 Calcular Regressão Linear"
+5. **Plotar Gráfico**: Clique em "🎨 Plotar Gráfico"
+
+#### Recursos da interface:
+
+- **Tab Gráfico**: Visualize o gráfico com barra de ferramentas (zoom, pan, salvar)
+- **Tab Dados**: Veja os dados brutos do arquivo Excel
+- **Tab Estatísticas**: Consulte estatísticas detalhadas de todas as variáveis
+
+### Modo 2: Linha de Comando (CLI)
+
+Para processamento direto sem interface:
+
+```bash
+python scalc.py --cli --arquivo src/data/TBTeste.xlsx
+```
+
+Com parâmetros personalizados:
+
+```bash
+python scalc.py --cli \
+    --arquivo dados.xlsx \
+    --x-label "Tempo (s)" \
+    --y-label "Distância (m)" \
+    --titulo "Meu Gráfico"
+```
+
+#### Argumentos disponíveis:
+
+- `--cli`: Ativa o modo linha de comando
+- `--arquivo` ou `-f`: Caminho para o arquivo Excel (obrigatório no modo CLI)
+- `--x-label`: Label do eixo X (padrão: "log(t) [s]")
+- `--y-label`: Label do eixo Y (padrão: "log(d) [mm]")
+- `--titulo`: Título do gráfico
+
+### Ajuda
+
+Para ver todas as opções disponíveis:
+
+```bash
+python scalc.py --help
+```
+
+## 📊 Formato dos Dados
+
+### Estrutura esperada do arquivo Excel:
+
+O arquivo deve conter colunas com a seguinte nomenclatura:
+
+- **Dados experimentais**: `x1`, `x2`, `x3`, `y1`, `y2`, `y3`, etc.
+- **Erros instrumentais**: `xerr_instr`, `yerr_instr`, etc.
+
+Exemplo:
+
+| x1   | x2   | x3   | xerr_instr | y1   | y2   | y3   | yerr_instr |
+|------|------|------|------------|------|------|------|------------|
+| 1.2  | 1.3  | 1.1  | 0.05       | 2.4  | 2.5  | 2.3  | 0.1        |
+| 2.3  | 2.4  | 2.2  | 0.05       | 4.6  | 4.8  | 4.5  | 0.1        |
+| ...  | ...  | ...  | ...        | ...  | ...  | ...  | ...        |
+
+**Notas importantes:**
+- Múltiplas medições da mesma variável devem ter o mesmo prefixo (ex: `x1`, `x2`, `x3`)
+- O programa calcula automaticamente a média e os erros estatísticos
+- Células vazias são ignoradas
+
+## 🎯 Funcionalidades
+
+### Cálculos Estatísticos
+
+- **Média**: Calculada a partir de múltiplas medições
+- **Erro Estatístico**: Erro padrão da média
+- **Erro Instrumental**: Lido diretamente do arquivo
+- **Erro Total**: Propagação quadrática dos erros
+
+### Regressão Linear
+
+- **Método dos Mínimos Quadrados**: Usando `scipy.stats.linregress`
+- **Coeficiente de Determinação (R²)**: Mede a qualidade do ajuste
+- **Equação da reta**: y = mx + b
+
+### Visualização
+
+- Gráfico de dispersão com barras de erro
+- Reta de regressão linear
+- Ferramentas interativas (zoom, pan, salvar)
+- Exportação em diversos formatos (PNG, PDF, SVG, EPS)
+
 ## 📁 Estrutura do Projeto
 
 ```
-SCalc/
-├── src/                  # Pasta fonte
-    ├── analysis/         # Pasta de análises estatísticas (ainda não elaborada)
-    ├── data/             # Pasta onde os arquivos das tabelas xlsx ficam armazenados
-    ├── models/           # Pasta onde os modelos estatísticos gerados ficam armazenados (ainda não elaborada)
-    ├── visualization/    # Pasta de visualização (ainda não elaborada)
-    ├── utils.py          # Arquivo de funções utilitárias
-├── scalc.py              # Arquivo principal
-├── requirements.txt      # Dependências do projeto
-├── .gitignore            # Arquivos ignorados pelo Git
-├── LICENSE               # Licensa MIT
-└── README.md             # Documentação
+scalc/
+├── scalc.py                 # Arquivo principal
+├── src/
+│   ├── utils.py            # Funções utilitárias
+│   ├── visualisation.py    # Interface gráfica
+│   └── data/
+│       └── TBTeste.xlsx    # Arquivo de exemplo
+└── README.md               # Este arquivo
 ```
 
-## 🛠️ Tecnologias Utilizadas
+## 🔧 Solução de Problemas
 
-- **Python**: Linguagem principal
-- **Pandas**: Manipulação de arquivos Excel
-- **Matplotlib**: Geração de gráficos estatísticos
-- **Numpy**: Cálculos numéricos e estatísticos
+### Erro: "ModuleNotFoundError: No module named 'PySide6'"
 
-## 📈 Exemplo de Uso
+```bash
+pip install PySide6
+```
 
-1. Prepare seu arquivo Excel com os dados seguindo o padrão fornecido;
-2. Execute o programa;
-3. Selecione o arquivo de entrada;
-4. Aguarde o processamento;
-5. Visualize os gráficos gerados;
-6. Gere a planilha de saída com os resultados;
-7. Finalize a execução.
+### Erro: "No module named 'openpyxl'"
+
+```bash
+pip install openpyxl
+```
+
+### Gráfico não aparece
+
+- **Modo CLI**: Certifique-se de que o backend do matplotlib está configurado corretamente
+- **Modo GUI**: Verifique se há erros no console
+
+### Arquivo não encontrado
+
+- Verifique o caminho do arquivo
+- Use caminhos absolutos ou relativos corretos
+- No Windows, use barras invertidas duplas (`\\`) ou barras normais (`/`)
+
+## 📝 Exemplo de Uso Completo
+
+```python
+# Importar módulos
+from src.utils import Calcular_Estatisticas, RegLin, PlotarGrafico
+import pandas as pd
+import numpy as np
+
+# Carregar dados
+dados = pd.read_excel("src/data/TBTeste.xlsx")
+
+# Calcular estatísticas
+medias, erros_est, erros_totais = Calcular_Estatisticas(dados)
+
+# Preparar dados
+x = np.array(medias['x'])
+y = np.array(medias['y'])
+x_err = np.array(erros_est['x'])
+y_err = np.array(erros_est['y'])
+
+# Calcular regressão
+slope, intercept, r_squared = RegLin(x, y)
+
+# Plotar
+PlotarGrafico(
+    set(zip(x, y)),
+    x_err.tolist(),
+    y_err.tolist(),
+    str_x="X",
+    str_y="Y",
+    slope=slope,
+    intercept=intercept,
+    titulo="Regressão Linear"
+)
+
+print(f"Equação: y = {slope:.4f}x + {intercept:.4f}")
+print(f"R² = {r_squared:.4f}")
+```
 
 ## 🤝 Contribuindo
 
-Contribuições são bem-vindas! Sinta-se à vontade para:
+Sugestões e melhorias são bem-vindas! Sinta-se à vontade para:
 
-1. Fazer um fork do projeto
-2. Criar uma branch para sua feature (`git checkout -b feature/NovaFuncionalidade`)
-3. Commitar suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Fazer push para a branch (`git push origin feature/NovaFuncionalidade`)
-5. Abrir um Pull Request
+1. Reportar bugs
+2. Sugerir novas funcionalidades
+3. Melhorar a documentação
 
-## 📝 Licença
+## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-## 👤 Autor
+## 👥 Autores
 
 **Caio Aquilino Merino**
-
 - GitHub: [@ZilchHarpy](https://github.com/ZilchHarpy)
 - Email: caioaquilinomerino@gmail.com
 
@@ -107,4 +240,5 @@ Se encontrar algum problema ou tiver sugestões, abra uma [issue](https://github
 
 ---
 
+**Desenvolvido com ❤️ usando Python, PySide6 e Matplotlib**
 ⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!
