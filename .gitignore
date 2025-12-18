@@ -16,3 +16,8 @@ __pypackages__/
 *.dll
 *.so
 *.dylibs
+*.out
+*.o
+*.obj
+*.lib
+Scalc.spec
