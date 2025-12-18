@@ -14,7 +14,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 
 # Importar funções utilitárias
-from utils import Calcular_Estatisticas, RegLin
+from .utils import Calcular_Estatisticas, RegLin
 
 
 class MplCanvas(FigureCanvas):
