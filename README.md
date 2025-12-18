@@ -215,8 +215,8 @@ scalc/
 │
 ├── docs/                         # Documentação
 │   ├── GUIA_VISUAL.md            # Guia visual de uso
-│   ├── API.md                    # Documentação de API
-│   └── TROUBLESHOOTING.md        # Solução de problemas
+│   ├── API.md (futuro)           # Documentação de API
+│   └── TROUBLESHOOTING.md (futuro)  # Solução de problemas
 │
 └── examples/                     # Exemplos de uso
     └── data/
