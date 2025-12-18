@@ -330,6 +330,7 @@ Certifique-se de que o backend do matplotlib está configurado corretamente.
 
 ## 📚 Documentação Adicional
 
+No diretório docs/
 - [GUIA_VISUAL.md](docs/GUIA_VISUAL.md) - Guia visual detalhado
 - [PROJETO_COMPLETO.md](PROJETO_COMPLETO.md) - Especificações técnicas completas
 
