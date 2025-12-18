@@ -19,16 +19,63 @@ Sistema completo para análise estatística e regressão linear com interface gr
 
 - Python 3.8 ou superior
 
-### Instalar dependências
+### 1. Instalar dependências do sistema (Linux)
+
+O PySide6 requer bibliotecas do sistema para funcionar. Execute o comando apropriado para sua distribuição:
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install -y libxcb-cursor0 libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0
+```
+
+**Fedora/RHEL:**
+```bash
+sudo dnf install libxcb xcb-util-cursor libxkbcommon-x11
+```
+
+**Arch Linux:**
+```bash
+sudo pacman -S libxcb xcb-util-cursor libxkbcommon-x11
+```
+
+**macOS:**
+```bash
+brew install qt@6
+```
+
+**Windows:**
+Nenhuma dependência adicional é necessária.
+
+### 2. Instalar dependências Python
+
+```bash
+pip install -r requirements.txt
+```
+
+Ou manualmente:
 
 ```bash
 pip install PySide6 matplotlib numpy pandas scipy openpyxl
 ```
 
-Ou use o arquivo requirements.txt (se disponível):
+### ⚡ Instalação Rápida (Automática)
 
+Para instalar todas as dependências automaticamente, use um dos scripts fornecidos:
+
+**Linux/macOS:**
 ```bash
-pip install -r requirements.txt
+bash setup.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+python setup.py
+```
+
+**Qualquer plataforma (usando Python):**
+```bash
+python setup.py
 ```
 
 ## 📖 Como Usar
