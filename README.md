@@ -184,41 +184,42 @@ python scalc.py --help
 
 ```
 scalc/
-├── scalc.py                      # Arquivo principal
-├── setup.py                      # Script de setup (Python)
-├── setup.sh                      # Script de setup (Bash)
-├── requirements.txt              # Dependências Python
+├── scalc.py                          # Arquivo principal
+├── setup.py                          # Script de setup (Python)
+├── setup.sh                          # Script de setup (Bash)
+├── requirements.txt                  # Dependências Python
 │
 ├── src/
 │   ├── __init__.py
-│   ├── core/                     # Lógica de negócio
+│   ├── core/                         # Lógica de negócio
 │   │   ├── __init__.py
-│   │   ├── statistics.py         # Cálculos estatísticos
-│   │   └── regression.py         # Regressão linear
+│   │   ├── statistics.py             # Cálculos estatísticos
+│   │   └── regression.py             # Regressão linear
 │   │
-│   ├── visualization/            # Visualização e interface
+│   ├── visualization/                # Visualização e interface
 │   │   ├── __init__.py
-│   │   ├── gui.py                # Interface gráfica (PySide6)
-│   │   └── plots.py              # Plotagem de gráficos
+│   │   ├── gui.py                    # Interface gráfica (PySide6)
+│   │   └── plots.py                  # Plotagem de gráficos
 │   │
-│   ├── data/                     # Dados e configuração
+│   ├── data/                         # Dados e configuração
 │   │   ├── __init__.py
-│   │   └── config.py             # Configurações globais
+│   │   └── config.py                 # Configurações globais
 │   │
-│   └── utils/                    # Utilidades gerais
+│   └── utils/                        # Utilidades gerais
 │       └── __init__.py
 │
-├── tests/                        # Testes unitários
+├── tests/                            # Testes unitários
 │   ├── __init__.py
-│   ├── test_statistics.py        # Testes de estatística
-│   └── test_regression.py        # Testes de regressão
+│   ├── test_statistics.py            # Testes de estatística
+│   └── test_regression.py            # Testes de regressão
 │
-├── docs/                         # Documentação
-│   ├── GUIA_VISUAL.md            # Guia visual de uso
-│   ├── API.md (futuro)           # Documentação de API
-│   └── TROUBLESHOOTING.md (futuro)  # Solução de problemas
+├── docs/                             # Documentação
+│   ├── GUIA_VISUAL.md                # Guia visual de uso
+│   ├── PROJETO_COMPLETO.md           #
+│   ├── API.md (futuro)               # Documentação de API
+│   └── TROUBLESHOOTING.md (futuro)   # Solução de problemas
 │
-└── examples/                     # Exemplos de uso
+└── examples/                         # Exemplos de uso
     └── data/
         └── sample_data.xlsx
 ```
