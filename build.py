@@ -1,3 +1,7 @@
+'''
+ainda em aperfeiçoamento para criar um executável de forma eficiente e leve...
+'''
+
 #!/usr/bin/env python3
 """
 Script de build usando Nuitka (compila para C++)
