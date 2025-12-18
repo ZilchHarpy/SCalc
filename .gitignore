@@ -21,4 +21,7 @@ __pypackages__/
 *.obj
 *.lib
 Scalc.spec
+Scalc.build
+Scalc.dist
+Scalc.exe
 Scalc
