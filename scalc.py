@@ -11,7 +11,8 @@ Data: 2025
 
 import sys
 import argparse
-from src.utils import Calcular_Estatisticas, RegLin, PlotarGrafico
+from src.core import Calcular_Estatisticas, RegLin
+from src.visualization.plots import PlotarGrafico
 import pandas as pd
 import numpy as np
 
@@ -99,7 +100,7 @@ def modo_gui():
     """
     Executa o programa em modo interface gráfica (GUI)
     """
-    from src.visualisation import iniciar_interface
+    from src.visualization.gui import iniciar_interface
     iniciar_interface()
 
 
