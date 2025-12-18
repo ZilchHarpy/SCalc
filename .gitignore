@@ -6,3 +6,13 @@ tests/
 *.xlsx
 testes/
 .vscode/
+.build/
+.dist/
+__pypackages__/
+*.spec
+*.log
+*.exe
+*.pyd
+*.dll
+*.so
+*.dylibs
