@@ -19,7 +19,8 @@ def build_nuitka():
         sys.executable, '-m', 'nuitka',
         '--standalone',              # Executável independente
         '--onefile',                 # Arquivo único
-        '--enable-plugin=pyside6',   # Plugin PySide6
+        # '--enable-plugin=pyside6',
+        '--include-package=PySide6',   # Plugin PySide6
         # '--disable-console',         # Sem console
         '--output-filename=SCalc',   # Nome do executável
         '--include-data-dir=src=src', # Incluir diretório src
