@@ -7,6 +7,7 @@ Contém funções para visualização de dados e regressão linear.
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Set
+from src.data.config import Config
 
 
 def PlotarGrafico(
@@ -35,13 +36,24 @@ def PlotarGrafico(
     Returns:
         None (exibe o gráfico)
     """
-    plt.style.use('_mpl-gallery')
+    plt.style.use(Config.Plot.STYLE)
 
     x, y = zip(*pontos)
 
     # Criar o gráfico e plotar barras de erro
-    fig, ax = plt.subplots()
-    ax.errorbar(x, y, xerr=erros_x, yerr=erros_y, fmt='o', ecolor='red', capsize=5)
+    fig, ax = plt.subplots(
+        figsize=(Config.Plot.FIGURE_WIDTH, Config.Plot.FIGURE_HEIGHT),
+        dpi=Config.Plot.FIGURE_DPI
+    )
+    ax.errorbar(
+        x, y, 
+        xerr=erros_x, 
+        yerr=erros_y, 
+        fmt='o',
+        color=Config.Plot.COLOR_PONTOS,
+        ecolor=Config.Plot.COLOR_ERRO,
+        capsize=Config.Plot.CAPSIZE_ERRO
+    )
 
     # Plotar a melhor reta
     x_fit = np.linspace(min(x) - 0.05 * min(x), max(x) + 0.05 * max(x), 500)

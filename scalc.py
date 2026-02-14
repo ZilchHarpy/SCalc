@@ -17,10 +17,10 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
+from src.data.config import Config, setup_logging
 from src.core import calcular_estatisticas, RegLin
 from src.visualization.plots import PlotarGrafico
 from src.utils import ValidadorDados
-from src.data.config import Config
 from src.core.exceptions import (
     DadosInvalidosException,
     ArquivoInvalidoException,
@@ -158,7 +158,7 @@ def main():
     setup_logging(nivel='INFO')
     
     parser = argparse.ArgumentParser(
-        description='SCalc - Sistema de Cálculo e Análise de Regressão Linear',
+        description=f'{Config.APP_NAME} - {Config.APP_DESCRIPTION}',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Exemplos de uso:
