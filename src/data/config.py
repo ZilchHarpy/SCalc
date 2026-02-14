@@ -113,7 +113,7 @@ class Config:
         FORMATO = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         
         # Arquivo de log
-        ARQUIVO_LOG = Path(__file__).parent.parent.parent / 'scalc.log'
+        ARQUIVO_LOG = Path(__file__).parent.parent.parent / 'logs' / 'scalc.log'
         
         # Rotação de logs
         MAX_BYTES = 10 * 1024 * 1024  # 10 MB
@@ -189,6 +189,10 @@ def setup_logging(nivel: str | None = None):
     """
     if nivel is None:
         nivel = Config.Logging.NIVEL_PADRAO
+    
+    # Criar diretório de logs se não existir
+    log_dir = Config.Logging.ARQUIVO_LOG.parent
+    log_dir.mkdir(parents=True, exist_ok=True)
     
     # Criar handler para arquivo
     file_handler = RotatingFileHandler(

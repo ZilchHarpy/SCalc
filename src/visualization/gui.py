@@ -7,8 +7,8 @@ Contém a interface gráfica principal do SCalc usando PySide6.
 import sys
 import numpy as np
 import pandas as pd
+from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -20,7 +20,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 
 # Importar funções utilitárias da nova estrutura
-from src.core import Calcular_Estatisticas, RegLin
+from src.core import calcular_estatisticas, RegLin
 
 
 class MplCanvas(FigureCanvas):
@@ -42,13 +42,13 @@ class InterfaceRegressaoLinear(QMainWindow):
         
         # Variáveis de dados
         self.dados_excel = None
-        self.medias = None
-        self.err_est = None
-        self.err_instr = None
-        self.x = None
-        self.y = None
-        self.x_err = None
-        self.y_err = None
+        self.medias = {}
+        self.err_est = {}
+        self.err_instr = {}
+        self.data_x = None
+        self.data_y = None
+        self.data_x_err = None
+        self.data_y_err = None
         self.slope = None
         self.intercept = None
         self.r_squared = None
@@ -65,7 +65,7 @@ class InterfaceRegressaoLinear(QMainWindow):
         main_layout = QHBoxLayout(central_widget)
         
         # Criar splitter para dividir painel de controle e visualização
-        splitter = QSplitter(Qt.Horizontal)
+        splitter = QSplitter(Qt.Orientation.Horizontal)
         
         # ============ PAINEL ESQUERDO - CONTROLES ============
         painel_esquerdo = QWidget()
@@ -77,7 +77,7 @@ class InterfaceRegressaoLinear(QMainWindow):
         titulo_font.setPointSize(14)
         titulo_font.setBold(True)
         titulo_label.setFont(titulo_font)
-        titulo_label.setAlignment(Qt.AlignCenter)
+        titulo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout_esquerdo.addWidget(titulo_label)
         
         # Grupo: Carregar Dados
@@ -294,7 +294,12 @@ class InterfaceRegressaoLinear(QMainWindow):
         
         try:
             # Calcular estatísticas
-            self.medias, self.err_est, self.err_instr = Calcular_Estatisticas(self.dados_excel)
+            resultado_stats = calcular_estatisticas(self.dados_excel)
+            
+            # Extrair dados do DataFrame
+            self.medias = dict(zip(resultado_stats['Dados'], resultado_stats['Média']))
+            self.err_est = dict(zip(resultado_stats['Dados'], resultado_stats['S_err']))
+            self.err_instr = dict(zip(resultado_stats['Dados'], resultado_stats['T_err']))
             
             # Popular combos com as variáveis disponíveis
             variaveis = list(self.medias.keys())
@@ -322,7 +327,7 @@ class InterfaceRegressaoLinear(QMainWindow):
     
     def mostrar_estatisticas_detalhadas(self):
         """Mostra estatísticas detalhadas na tab correspondente"""
-        if self.medias is None:
+        if not self.medias:
             return
         
         texto = "=" * 60 + "\n"
@@ -333,7 +338,8 @@ class InterfaceRegressaoLinear(QMainWindow):
             texto += f"Variável: {var}\n"
             texto += "-" * 40 + "\n"
             texto += f"Médias: {self.medias[var]}\n"
-            texto += f"Erros Estatísticos: {self.err_est[var]}\n"
+            if var in self.err_est:
+                texto += f"Erros Estatísticos: {self.err_est[var]}\n"
             if var in self.err_instr:
                 texto += f"Erros Instrumentais: {self.err_instr[var]}\n"
             texto += "\n"
@@ -342,7 +348,7 @@ class InterfaceRegressaoLinear(QMainWindow):
     
     def calcular_regressao(self):
         """Calcula a regressão linear"""
-        if self.medias is None:
+        if not self.medias:
             QMessageBox.warning(self, "Aviso", "Por favor, calcule as estatísticas primeiro!")
             return
         
@@ -356,13 +362,13 @@ class InterfaceRegressaoLinear(QMainWindow):
                 return
             
             # Preparar dados
-            self.x = np.array(self.medias[var_x])
-            self.y = np.array(self.medias[var_y])
-            self.x_err = np.array(self.err_est[var_x])
-            self.y_err = np.array(self.err_est[var_y])
+            self.data_x = np.array([self.medias[var_x]])
+            self.data_y = np.array([self.medias[var_y]])
+            self.data_x_err = np.array([self.err_est[var_x]])
+            self.data_y_err = np.array([self.err_est[var_y]])
             
             # Calcular regressão
-            self.slope, self.intercept, self.r_squared = RegLin(self.x, self.y)
+            self.slope, self.intercept, self.r_squared = RegLin(self.data_x.tolist(), self.data_y.tolist())
             
             # Mostrar resultados
             resultado = "=" * 60 + "\n"
@@ -398,7 +404,7 @@ class InterfaceRegressaoLinear(QMainWindow):
     
     def plotar_grafico(self):
         """Plota o gráfico com regressão linear"""
-        if self.x is None or self.y is None:
+        if self.data_x is None or self.data_y is None:
             QMessageBox.warning(self, "Aviso", "Por favor, calcule a regressão primeiro!")
             return
         
@@ -408,9 +414,9 @@ class InterfaceRegressaoLinear(QMainWindow):
             
             # Plotar pontos com barras de erro
             self.canvas.axes.errorbar(
-                self.x, self.y,
-                xerr=self.x_err,
-                yerr=self.y_err,
+                self.data_x, self.data_y,
+                xerr=self.data_x_err,
+                yerr=self.data_y_err,
                 fmt='o',
                 color='red',
                 ecolor='darkred',
@@ -421,8 +427,8 @@ class InterfaceRegressaoLinear(QMainWindow):
             )
             
             # Plotar reta de regressão
-            x_fit = np.linspace(self.x.min() - 0.05*abs(self.x.min()), 
-                               self.x.max() + 0.05*abs(self.x.max()), 500)
+            x_fit = np.linspace(self.data_x.min() - 0.05*abs(self.data_x.min()), 
+                               self.data_x.max() + 0.05*abs(self.data_x.max()), 500)
             y_fit = self.slope * x_fit + self.intercept
             
             self.canvas.axes.plot(
@@ -459,19 +465,19 @@ class InterfaceRegressaoLinear(QMainWindow):
             self,
             "Confirmar",
             "Deseja limpar todos os dados?",
-            QMessageBox.Yes | QMessageBox.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         
-        if resposta == QMessageBox.Yes:
+        if resposta == QMessageBox.StandardButton.Yes:
             # Resetar variáveis
             self.dados_excel = None
-            self.medias = None
-            self.err_est = None
-            self.err_instr = None
-            self.x = None
-            self.y = None
-            self.x_err = None
-            self.y_err = None
+            self.medias = {}
+            self.err_est = {}
+            self.err_instr = {}
+            self.data_x = None
+            self.data_y = None
+            self.data_x_err = None
+            self.data_y_err = None
             self.slope = None
             self.intercept = None
             self.r_squared = None
