@@ -11,10 +11,24 @@ Data: 2025
 
 import sys
 import argparse
-from src.core import calcular_estatisticas, RegLin
-from src.visualization.plots import PlotarGrafico
+import logging
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
+
+from src.core import calcular_estatisticas, RegLin
+from src.visualization.plots import PlotarGrafico
+from src.utils import ValidadorDados
+from src.data.config import Config
+from src.core.exceptions import (
+    DadosInvalidosException,
+    ArquivoInvalidoException,
+    RegressaoException
+)
+
+# Configurar logger
+logger = logging.getLogger(__name__)
 
 
 def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]", 
@@ -28,52 +42,71 @@ def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]",
         ax_y: Label do eixo Y
         titulo: Título do gráfico
     """
-    print("=" * 60)
-    print("SCalc - Modo Linha de Comando")
-    print("=" * 60)
+    logger.info("="*60)
+    logger.info("SCalc - Modo Linha de Comando")
+    logger.info("="*60)
     
     try:
+        # Validar arquivo
+        logger.info(f"Validando arquivo: {path}")
+        ValidadorDados.validar_arquivo_excel(path)
+        
         # Leitura dos dados do arquivo Excel
-        print(f"\n📁 Carregando arquivo: {path}")
+        logger.info(f"Carregando arquivo: {path}")
         dados_excel = pd.read_excel(path)
-        print(f"✓ Arquivo carregado com sucesso!")
-        print(f"  Linhas: {len(dados_excel)}")
-        print(f"  Colunas: {len(dados_excel.columns)}")
+        
+        # Validar DataFrame
+        logger.info(f"Validando DataFrame")
+        ValidadorDados.validar_dataframe(dados_excel, "Dados do Excel")
+        ValidadorDados.validar_tamanho_arquivo(dados_excel)
+        
+        logger.info(f"Arquivo carregado com sucesso: {len(dados_excel)} linhas, {len(dados_excel.columns)} colunas")
         
         # Cálculo das estatísticas
-        print("\n🔢 Calculando estatísticas...")
-        medias, err_est, err_instr = calcular_estatisticas(dados_excel)
-        print(f"✓ Estatísticas calculadas!")
-        print(f"  Variáveis encontradas: {', '.join(medias.keys())}")
+        logger.info("Calculando estatísticas...")
+        resultado_stats = calcular_estatisticas(dados_excel)
+        logger.info(f"Estatísticas calculadas para {len(resultado_stats)} variáveis")
+        
+        # Extrair dados das estatísticas
+        medias = dict(zip(resultado_stats['Dados'], resultado_stats['Média']))
+        err_est = dict(zip(resultado_stats['Dados'], resultado_stats['S_err']))
+        err_total = dict(zip(resultado_stats['Dados'], resultado_stats['T_err']))
+        
+        logger.info(f"Variáveis encontradas: {', '.join(medias.keys())}")
+        
+        # Validar dados suficientes para regressão
+        if len(medias) < 2:
+            raise DadosInvalidosException("Mínimo de 2 variáveis necessário para regressão linear")
         
         # Preparação dos dados para regressão linear
-        print("\n📊 Preparando dados para regressão linear...")
-        y, x = np.array(list(medias.values())[0]), np.array(list(medias.values())[1])
-        y_err, x_err = np.array(list(err_est.values())[0]), np.array(list(err_est.values())[1])
+        logger.info("Preparando dados para regressão linear...")
+        dados_keys = list(medias.keys())
+        x = np.array([medias[dados_keys[0]]])
+        y = np.array([medias[dados_keys[1]]])
+        x_err = np.array([err_est[dados_keys[0]]])
+        y_err = np.array([err_est[dados_keys[1]]])
         
         # Realiza a regressão linear
-        print("📈 Calculando regressão linear...")
-        slope, intercept, r_squared = RegLin(x, y)
+        logger.info("Calculando regressão linear...")
+        try:
+            slope, intercept, r_squared = RegLin(x.tolist(), y.tolist())
+        except Exception as e:
+            raise RegressaoException(f"Erro na regressão linear: {str(e)}")
         
         # Mostrar resultados
-        print("\n" + "=" * 60)
-        print("RESULTADOS DA REGRESSÃO LINEAR")
-        print("=" * 60)
-        print(f"Equação: y = {slope:.6f}x + {intercept:.6f}")
-        print(f"Coeficiente Angular (m): {slope:.6f}")
-        print(f"Coeficiente Linear (b): {intercept:.6f}")
-        print(f"R² (Coeficiente de Determinação): {r_squared:.6f}")
+        logger.info("="*60)
+        logger.info("RESULTADOS DA REGRESSÃO LINEAR")
+        logger.info("="*60)
+        logger.info(f"Equação: y = {slope:.6f}x + {intercept:.6f}")
+        logger.info(f"Coeficiente Angular (m): {slope:.6f}")
+        logger.info(f"Coeficiente Linear (b): {intercept:.6f}")
+        logger.info(f"R² (Coeficiente de Determinação): {r_squared:.6f}")
         
-        if r_squared > 0.95:
-            print("✓ Excelente ajuste (R² > 0.95)")
-        elif r_squared > 0.85:
-            print("✓ Bom ajuste (R² > 0.85)")
-        elif r_squared > 0.70:
-            print("⚠️ Ajuste moderado (R² > 0.70)")
-        else:
-            print("⚠️ Ajuste fraco (R² < 0.70)")
+        # Classificar qualidade do ajuste
+        qualidade = Config.validar_r2(r_squared)
+        logger.info(f"Qualidade do ajuste: {qualidade}")
         
-        print("\n🎨 Plotando gráfico...")
+        logger.info("Plotando gráfico...")
         # Plotar gráfico
         PlotarGrafico(
             set(zip(x, y)),
@@ -86,28 +119,44 @@ def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]",
             titulo=titulo
         )
         
-        print("✓ Processo concluído com sucesso!")
+        logger.info("Processo concluído com sucesso!")
         
-    except FileNotFoundError:
-        print(f"❌ Erro: Arquivo não encontrado: {path}")
+    except ArquivoInvalidoException as e:
+        logger.error(f"Erro de arquivo: {str(e)}")
+        sys.exit(1)
+    except DadosInvalidosException as e:
+        logger.error(f"Erro nos dados: {str(e)}")
+        sys.exit(1)
+    except RegressaoException as e:
+        logger.error(f"Erro na regressão: {str(e)}")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Erro durante o processamento: {str(e)}")
+        logger.exception(f"Erro inesperado durante o processamento: {str(e)}")
         sys.exit(1)
+
 
 
 def modo_gui():
     """
     Executa o programa em modo interface gráfica (GUI)
     """
-    from src.visualization.gui import iniciar_interface
-    iniciar_interface()
+    logger.info("Iniciando interface gráfica...")
+    try:
+        from src.visualization.gui import iniciar_interface
+        iniciar_interface()
+    except Exception as e:
+        logger.exception(f"Erro ao iniciar interface gráfica: {str(e)}")
+        sys.exit(1)
 
 
 def main():
     """
     Função principal que decide qual modo executar
     """
+    # Configurar logging
+    from src.data.config import setup_logging
+    setup_logging(nivel='INFO')
+    
     parser = argparse.ArgumentParser(
         description='SCalc - Sistema de Cálculo e Análise de Regressão Linear',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -165,14 +214,17 @@ Exemplos de uso:
     
     args = parser.parse_args()
     
+    logger.info(f"SCalc versão {Config.APP_VERSION} iniciado")
+    
     # Decidir qual modo executar
     if args.cli:
         # Modo CLI
         if not args.arquivo:
-            print("❌ Erro: No modo CLI, o argumento --arquivo é obrigatório!")
+            logger.error("No modo CLI, o argumento --arquivo é obrigatório!")
             parser.print_help()
             sys.exit(1)
         
+        logger.info(f"Executando em modo CLI com arquivo: {args.arquivo}")
         modo_cli(
             path=args.arquivo,
             ax_x=args.x_label,
@@ -181,6 +233,7 @@ Exemplos de uso:
         )
     else:
         # Modo GUI (padrão)
+        logger.info("Executando em modo GUI")
         modo_gui()
 
 

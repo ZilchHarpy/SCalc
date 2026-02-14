@@ -20,3 +20,23 @@ class DadosInsuficientesException(ScalcException):
 class ColunasInvalidasException(ScalcException):
     """Exceção para problemas com colunas do DataFrame"""
     pass
+
+
+class DadosNaoNumericosException(ScalcException):
+    """Exceção quando dados esperados não são numéricos"""
+    pass
+
+
+class RegressaoException(ScalcException):
+    """Exceção em cálculos de regressão linear"""
+    pass
+
+
+class ArquivoInvalidoException(ScalcException):
+    """Exceção para arquivos inválidos ou inacessíveis"""
+    pass
+
+
+class ConfiguracaoException(ScalcException):
+    """Exceção para problemas de configuração"""
+    pass
