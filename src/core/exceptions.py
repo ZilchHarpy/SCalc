@@ -1,42 +1,42 @@
 """
-Exceções customizadas SCalc
+Excecoes customizadas SCalc
 """
 
 class ScalcException(Exception):
-    """Exceção base para todas as exceções do SCalc"""
+    """Excecao base para todas as excecoes do SCalc"""
     pass
 
 
 class DadosInvalidosException(ScalcException):
-    """Exceção para dados inválidos ou mal formatados"""
+    """Excecao para dados invalidos ou mal formatados"""
     pass
 
 
 class DadosInsuficientesException(ScalcException):
-    """Exceção para dados insuficientes para análise"""
+    """Excecao para dados insuficientes para analise"""
     pass
 
 
 class ColunasInvalidasException(ScalcException):
-    """Exceção para problemas com colunas do DataFrame"""
+    """Excecao para problemas com colunas do DataFrame"""
     pass
 
 
 class DadosNaoNumericosException(ScalcException):
-    """Exceção quando dados esperados não são numéricos"""
+    """Excecao quando dados esperados nao sao numericos"""
     pass
 
 
 class RegressaoException(ScalcException):
-    """Exceção em cálculos de regressão linear"""
+    """Excecao em calculos de regressao linear"""
     pass
 
 
 class ArquivoInvalidoException(ScalcException):
-    """Exceção para arquivos inválidos ou inacessíveis"""
+    """Excecao para arquivos invalidos ou inacessiveis"""
     pass
 
 
 class ConfiguracaoException(ScalcException):
-    """Exceção para problemas de configuração"""
+    """Excecao para problemas de configuracao"""
     pass

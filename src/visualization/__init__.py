@@ -1,7 +1,7 @@
 """
-Módulo de Visualização
+Modulo de Visualizacao
 
-Contém funções para plotagem de gráficos e interface gráfica
+Contem funcoes para plotagem de graficos e interface grafica
 """
 
 from .plots import PlotarGrafico

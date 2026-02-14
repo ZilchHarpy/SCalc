@@ -1,5 +1,5 @@
 """
-Módulo de parsing e extração de informações de nomes de colunas em DataFrames.
+Modulo de parsing e extracao de informacoes de nomes de colunas em DataFrames.
 """
 
 import re
@@ -7,13 +7,13 @@ from typing import Optional
 
 def extrair_prefixo(nome_coluna) -> Optional[str]:
     """
-    Extrai o prefixo alfabético de uma coluna (ex: 'x1' -> 'x'; 'temp2' -> 'temp)
+    Extrai o prefixo alfabetico de uma coluna (ex: 'x1' -> 'x'; 'temp2' -> 'temp)
 
     Args:
         nome_coluna (str): Nome da coluna a analisar
     
     Returns:
-        str: Prefixo da variável, ou None se não encontrado
+        str: Prefixo da variavel, ou None se nao encontrado
     
     Examples:
         >>> extrair_prefixo('x1')
@@ -39,7 +39,7 @@ def eh_erro_instrumental(nome_coluna) -> bool:
         nome_coluna (str): Nome da coluna a analisar
 
     Returns:
-        bool: True se for coluna de erro instrumental, False caso contrário
+        bool: True se for coluna de erro instrumental, False caso contrario
 
     Examples:
         >>> eh_erro('i_err')

@@ -56,7 +56,7 @@ class Config:
     # ============ CONFIGURACOES DE ESTATISTICA ============
     class Estatistica:
         """Configuracoes de analise estatistica"""
-        # Criterios de qualidade de R²
+        # Criterios de qualidade de R2
         R2_EXCELENTE = 0.95
         R2_BOM = 0.85
         R2_MODERADO = 0.70
@@ -158,7 +158,7 @@ class Config:
     @classmethod
     def validar_r2(cls, r_squared: float) -> str:
         """
-        Classifica a qualidade do ajuste baseado em R²
+        Classifica a qualidade do ajuste baseado em R2
         
         Args:
             r_squared: Coeficiente de determinacao

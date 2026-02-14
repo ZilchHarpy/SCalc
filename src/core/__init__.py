@@ -1,5 +1,5 @@
 """
-Módulo core - Contém a lógica principal de cálculos estatísticos e regressão
+Modulo core - Contem a logica principal de calculos estatisticos e regressao
 """
 
 from .statistics import calcular_estatisticas, particionar

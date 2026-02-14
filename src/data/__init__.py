@@ -1,5 +1,5 @@
 """
-Módulo de Dados
+Modulo de Dados
 
-Contém configurações e data sources do projeto.
+Contem configuracoes e data sources do projeto.
 """

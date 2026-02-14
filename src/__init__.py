@@ -1,7 +1,7 @@
 """
-SCalc - Sistema de Cálculo e Análise de Regressão Linear
+SCalc - Sistema de Calculo e Analise de Regressao Linear
 
-Módulo principal do SCalc. Expõe as principais funções para fácil acesso.
+Modulo principal do SCalc. Expoe as principais funcoes para facil acesso.
 """
 
 from src.core import calcular_estatisticas, RegLin, particionar

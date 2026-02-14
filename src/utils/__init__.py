@@ -1,7 +1,7 @@
 """
-Módulo de Utilidades
+Modulo de Utilidades
 
-Contém funções auxiliares e validadores.
+Contem funcoes auxiliares e validadores.
 """
 
 from .parsers import eh_erro_instrumental

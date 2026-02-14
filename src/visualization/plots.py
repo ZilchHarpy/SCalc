@@ -1,7 +1,7 @@
 """
-Módulo de Plotagem de Gráficos
+Modulo de Plotagem de Graficos
 
-Contém funções para visualização de dados e regressão linear.
+Contem funcoes para visualizacao de dados e regressao linear.
 """
 
 import numpy as np
@@ -21,26 +21,26 @@ def PlotarGrafico(
     titulo: str
 ) -> None:
     """
-    Plota um gráfico de dispersão com barras de erro e reta de regressão linear.
+    Plota um grafico de dispersao com barras de erro e reta de regressao linear.
     
     Args:
         pontos: Conjunto de tuplas (x, y) dos pontos a plotar
         erros_x: Lista de erros para o eixo X
         erros_y: Lista de erros para o eixo Y
         str_x: Label do eixo X
-        slope: Coeficiente angular da reta de regressão
-        intercept: Coeficiente linear da reta de regressão
+        slope: Coeficiente angular da reta de regressao
+        intercept: Coeficiente linear da reta de regressao
         str_y: Label do eixo Y
-        titulo: Título do gráfico
+        titulo: Titulo do grafico
         
     Returns:
-        None (exibe o gráfico)
+        None (exibe o grafico)
     """
     plt.style.use(Config.Plot.STYLE)
 
     x, y = zip(*pontos)
 
-    # Criar o gráfico e plotar barras de erro
+    # Criar o grafico e plotar barras de erro
     fig, ax = plt.subplots(
         figsize=(Config.Plot.FIGURE_WIDTH, Config.Plot.FIGURE_HEIGHT),
         dpi=Config.Plot.FIGURE_DPI
@@ -63,7 +63,7 @@ def PlotarGrafico(
     ax.plot(x_fit, y_fit, color='blue', label='Melhor Reta')
     ax.legend()
 
-    # Configurações do gráfico
+    # Configuracoes do grafico
     ax.set_title(titulo)
     ax.set_xlabel(str_x)
     ax.set_ylabel(str_y)

@@ -1,9 +1,9 @@
 """
-SCalc - Sistema de Cálculo e Análise de Regressão Linear
+SCalc - Sistema de Calculo e Analise de Regressao Linear
 
-Este módulo pode ser executado de duas formas:
+Este modulo pode ser executado de duas formas:
 1. Modo CLI (linha de comando) - para processamento direto de arquivos
-2. Modo GUI (interface gráfica) - para uso interativo
+2. Modo GUI (interface grafica) - para uso interativo
 
 Autor: [Seu Nome]
 Data: 2025
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]", 
-             titulo: str = "Gráfico de Dispersão com Regressão Linear"):
+             titulo: str = "Grafico de Dispersao com Regressao Linear"):
     """
     Executa o programa em modo linha de comando (CLI)
     
@@ -40,7 +40,7 @@ def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]",
         path: Caminho para o arquivo Excel
         ax_x: Label do eixo X
         ax_y: Label do eixo Y
-        titulo: Título do gráfico
+        titulo: Titulo do grafico
     """
     logger.info("="*60)
     logger.info("SCalc - Modo Linha de Comando")
@@ -62,52 +62,52 @@ def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]",
         
         logger.info(f"Arquivo carregado com sucesso: {len(dados_excel)} linhas, {len(dados_excel.columns)} colunas")
         
-        # Cálculo das estatísticas
-        logger.info("Calculando estatísticas...")
+        # Calculo das estatisticas
+        logger.info("Calculando estatisticas...")
         resultado_stats = calcular_estatisticas(dados_excel)
-        logger.info(f"Estatísticas calculadas para {len(resultado_stats)} variáveis")
+        logger.info(f"Estatisticas calculadas para {len(resultado_stats)} variaveis")
         
-        # Extrair dados das estatísticas
-        medias = dict(zip(resultado_stats['Dados'], resultado_stats['Média']))
+        # Extrair dados das estatisticas
+        medias = dict(zip(resultado_stats['Dados'], resultado_stats['Media']))
         err_est = dict(zip(resultado_stats['Dados'], resultado_stats['S_err']))
         err_total = dict(zip(resultado_stats['Dados'], resultado_stats['T_err']))
         
-        logger.info(f"Variáveis encontradas: {', '.join(medias.keys())}")
+        logger.info(f"Variaveis encontradas: {', '.join(medias.keys())}")
         
-        # Validar dados suficientes para regressão
+        # Validar dados suficientes para regressao
         if len(medias) < 2:
-            raise DadosInvalidosException("Mínimo de 2 variáveis necessário para regressão linear")
+            raise DadosInvalidosException("Minimo de 2 variaveis necessario para regressao linear")
         
-        # Preparação dos dados para regressão linear
-        logger.info("Preparando dados para regressão linear...")
+        # Preparacao dos dados para regressao linear
+        logger.info("Preparando dados para regressao linear...")
         dados_keys = list(medias.keys())
         x = np.array([medias[dados_keys[0]]])
         y = np.array([medias[dados_keys[1]]])
         x_err = np.array([err_est[dados_keys[0]]])
         y_err = np.array([err_est[dados_keys[1]]])
         
-        # Realiza a regressão linear
-        logger.info("Calculando regressão linear...")
+        # Realiza a regressao linear
+        logger.info("Calculando regressao linear...")
         try:
             slope, intercept, r_squared = RegLin(x.tolist(), y.tolist())
         except Exception as e:
-            raise RegressaoException(f"Erro na regressão linear: {str(e)}")
+            raise RegressaoException(f"Erro na regressao linear: {str(e)}")
         
         # Mostrar resultados
         logger.info("="*60)
-        logger.info("RESULTADOS DA REGRESSÃO LINEAR")
+        logger.info("RESULTADOS DA REGRESSAO LINEAR")
         logger.info("="*60)
-        logger.info(f"Equação: y = {slope:.6f}x + {intercept:.6f}")
+        logger.info(f"Equacao: y = {slope:.6f}x + {intercept:.6f}")
         logger.info(f"Coeficiente Angular (m): {slope:.6f}")
         logger.info(f"Coeficiente Linear (b): {intercept:.6f}")
-        logger.info(f"R² (Coeficiente de Determinação): {r_squared:.6f}")
+        logger.info(f"R2 (Coeficiente de Determinacao): {r_squared:.6f}")
         
         # Classificar qualidade do ajuste
         qualidade = Config.validar_r2(r_squared)
         logger.info(f"Qualidade do ajuste: {qualidade}")
         
-        logger.info("Plotando gráfico...")
-        # Plotar gráfico
+        logger.info("Plotando grafico...")
+        # Plotar grafico
         PlotarGrafico(
             set(zip(x, y)),
             x_err.tolist(),
@@ -119,7 +119,7 @@ def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]",
             titulo=titulo
         )
         
-        logger.info("Processo concluído com sucesso!")
+        logger.info("Processo concluido com sucesso!")
         
     except ArquivoInvalidoException as e:
         logger.error(f"Erro de arquivo: {str(e)}")
@@ -128,7 +128,7 @@ def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]",
         logger.error(f"Erro nos dados: {str(e)}")
         sys.exit(1)
     except RegressaoException as e:
-        logger.error(f"Erro na regressão: {str(e)}")
+        logger.error(f"Erro na regressao: {str(e)}")
         sys.exit(1)
     except Exception as e:
         logger.exception(f"Erro inesperado durante o processamento: {str(e)}")
@@ -138,20 +138,20 @@ def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]",
 
 def modo_gui():
     """
-    Executa o programa em modo interface gráfica (GUI)
+    Executa o programa em modo interface grafica (GUI)
     """
-    logger.info("Iniciando interface gráfica...")
+    logger.info("Iniciando interface grafica...")
     try:
         from src.visualization.gui import iniciar_interface
         iniciar_interface()
     except Exception as e:
-        logger.exception(f"Erro ao iniciar interface gráfica: {str(e)}")
+        logger.exception(f"Erro ao iniciar interface grafica: {str(e)}")
         sys.exit(1)
 
 
 def main():
     """
-    Função principal que decide qual modo executar
+    Funcao principal que decide qual modo executar
     """
     # Configurar logging
     from src.data.config import setup_logging
@@ -163,20 +163,20 @@ def main():
         epilog='''
 Exemplos de uso:
 
-  # Modo GUI (interface gráfica):
+  # Modo GUI (interface grafica):
   python scalc.py
   python scalc.py --gui
 
   # Modo CLI (linha de comando):
   python scalc.py --cli --arquivo src/data/TBTeste.xlsx
-  python scalc.py --cli --arquivo dados.xlsx --x-label "Tempo (s)" --y-label "Distância (m)"
+  python scalc.py --cli --arquivo dados.xlsx --x-label "Tempo (s)" --y-label "Distancia (m)"
         '''
     )
     
     parser.add_argument(
         '--gui',
         action='store_true',
-        help='Executar em modo interface gráfica (padrão se nenhum argumento for fornecido)'
+        help='Executar em modo interface grafica (padrao se nenhum argumento for fornecido)'
     )
     
     parser.add_argument(
@@ -188,39 +188,39 @@ Exemplos de uso:
     parser.add_argument(
         '--arquivo', '-f',
         type=str,
-        help='Caminho para o arquivo Excel (obrigatório no modo CLI)'
+        help='Caminho para o arquivo Excel (obrigatorio no modo CLI)'
     )
     
     parser.add_argument(
         '--x-label',
         type=str,
         default='log(t) [s]',
-        help='Label do eixo X (padrão: "log(t) [s]")'
+        help='Label do eixo X (padrao: "log(t) [s]")'
     )
     
     parser.add_argument(
         '--y-label',
         type=str,
         default='log(d) [mm]',
-        help='Label do eixo Y (padrão: "log(d) [mm]")'
+        help='Label do eixo Y (padrao: "log(d) [mm]")'
     )
     
     parser.add_argument(
         '--titulo',
         type=str,
-        default='Gráfico de Dispersão com Regressão Linear',
-        help='Título do gráfico'
+        default='Grafico de Dispersao com Regressao Linear',
+        help='Titulo do grafico'
     )
     
     args = parser.parse_args()
     
-    logger.info(f"SCalc versão {Config.APP_VERSION} iniciado")
+    logger.info(f"SCalc versao {Config.APP_VERSION} iniciado")
     
     # Decidir qual modo executar
     if args.cli:
         # Modo CLI
         if not args.arquivo:
-            logger.error("No modo CLI, o argumento --arquivo é obrigatório!")
+            logger.error("No modo CLI, o argumento --arquivo e obrigatorio!")
             parser.print_help()
             sys.exit(1)
         
@@ -232,7 +232,7 @@ Exemplos de uso:
             titulo=args.titulo
         )
     else:
-        # Modo GUI (padrão)
+        # Modo GUI (padrao)
         logger.info("Executando em modo GUI")
         modo_gui()
 

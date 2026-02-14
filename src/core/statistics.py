@@ -51,7 +51,7 @@ def particionar(tabela: pd.DataFrame):
         >>> dados
         {'a': [1, 4, 7], 'b': [2, 5, 8], 'c': [3, 6, 9]}
     """
-    # Validações iniciais
+    # Validacoes iniciais
     ValidadorDados.validar_dataframe(tabela, "Tabela de entrada")
     
     # Remover linhas e colunas vazias
@@ -77,7 +77,7 @@ def particionar(tabela: pd.DataFrame):
     logger.info(f"Particionamento: {len(dados_brutos_list)} colunas de dados, "
                 f"{len(erros_list)} colunas de erro")
     
-    # Inicializa dicionários de resultados
+    # Inicializa dicionarios de resultados
     erros_instrumentais_list = [float('nan')]
     dados_keys = []
     dados_iteracoes = {}
@@ -86,7 +86,7 @@ def particionar(tabela: pd.DataFrame):
 
     for coluna in tabela.columns:
         if eh_erro_instrumental(coluna):
-            # Validar dados numéricos
+            # Validar dados numericos
             try:
                 dados_serie = ValidadorDados.validar_dados_numericos(
                     tabela[coluna], 
@@ -101,7 +101,7 @@ def particionar(tabela: pd.DataFrame):
             if 'dados' in str(coluna).lower():
                 dados_keys = tabela[coluna].dropna().tolist()
             else:
-                # Validar dados numéricos
+                # Validar dados numericos
                 try:
                     dados_serie = ValidadorDados.validar_dados_numericos(
                         tabela[coluna],
@@ -121,9 +121,9 @@ def particionar(tabela: pd.DataFrame):
         erros_instrumentais[key].append(erros_instrumentais_list[dados_keys.index(key)])
 
     if not dados_brutos:
-        raise DadosInvalidosException("Nenhuma coluna contém dados numéricos válidos")
+        raise DadosInvalidosException("Nenhuma coluna contem dados numericos validos")
 
-    logger.info(f"Particionamento concluído: {len(dados_brutos)} variáveis extraídas")
+    logger.info(f"Particionamento concluido: {len(dados_brutos)} variaveis extraidas")
     return dados_brutos, erros_instrumentais, dados_keys
 
 
@@ -153,20 +153,20 @@ def calcular_estatisticas(tabela: pd.DataFrame):
     ValidadorDados.validar_medicoes_minimas(dados_brutos)
     
     total_medicoes = sum(len(valores) for valores in dados_brutos.values())
-    logger.info(f"Calculando estatísticas para {len(dados_brutos)} variáveis ({total_medicoes} medições)")
+    logger.info(f"Calculando estatisticas para {len(dados_brutos)} variaveis ({total_medicoes} medicoes)")
 
-    # Inicializa dicionários de resultados
+    # Inicializa dicionarios de resultados
     medias = {}
     erros_est = {}
     erros_totais = {}
 
-    # Calcula a média dos elementos
+    # Calcula a media dos elementos
     for key in dados_brutos:
         medias[key] = float(sum(dados_brutos[key])) / float(len(dados_brutos[key]))
 
     logger.debug(f"Medias calculadas: {medias}")
 
-    # Calcula o erro estatístico e erro total para cada chave
+    # Calcula o erro estatistico e erro total para cada chave
     for key, valores in dados_brutos.items():
         desvio_padrao = {}
         desvio_padrao[key] = (sum([(x - medias[key]) ** 2 for x in valores]) / (len(valores)-1)) ** 0.5

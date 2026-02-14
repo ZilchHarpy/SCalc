@@ -2,11 +2,11 @@
 """
 SCalc Setup & Verification Script
 ===================================
-Script unificado para verificação e instalação de dependências.
+Script unificado para verificacao e instalacao de dependencias.
 Funciona em Windows, Linux (Ubuntu/Debian, Fedora/RHEL, Arch) e macOS.
 
 Uso:
-    python setup.py             # Verifica e instala (com confirmação do usuário)
+    python setup.py             # Verifica e instala (com confirmacao do usuario)
 """
 
 import sys
@@ -17,9 +17,9 @@ from pathlib import Path
 
 
 class ScalcSetup:
-    """Gerenciador de setup e verificação para SCalc"""
+    """Gerenciador de setup e verificacao para SCalc"""
     
-    # Dependências Python necessárias
+    # Dependencias Python necessarias
     MODULOS_NECESSARIOS = [
         ('PySide6', 'PySide6'),
         ('matplotlib', 'Matplotlib'),
@@ -35,7 +35,7 @@ class ScalcSetup:
         self.python_exe = sys.executable
         
     def _detectar_distro(self):
-        """Detecta a distribuição Linux"""
+        """Detecta a distribuicao Linux"""
         if self.sistema == "Linux":
             try:
                 with open("/etc/os-release", "r") as f:
@@ -59,7 +59,7 @@ class ScalcSetup:
         print()
     
     def verificar_modulo(self, nome_modulo, nome_exibir=None):
-        """Verifica se um módulo Python está instalado"""
+        """Verifica se um modulo Python esta instalado"""
         if nome_exibir is None:
             nome_exibir = nome_modulo
         
@@ -68,12 +68,12 @@ class ScalcSetup:
             print(f"  ✓ {nome_exibir:20} instalado")
             return True
         except ImportError:
-            print(f"  ✗ {nome_exibir:20} NÃO instalado")
+            print(f"  ✗ {nome_exibir:20} NAO instalado")
             return False
     
     def verificar_dependencias_python(self):
-        """Verifica todas as dependências Python"""
-        self._banner("VERIFICAÇÃO DE DEPENDÊNCIAS PYTHON")
+        """Verifica todas as dependencias Python"""
+        self._banner("VERIFICACAO DE DEPENDENCIAS PYTHON")
         
         instaladas = []
         nao_instaladas = []
@@ -87,8 +87,8 @@ class ScalcSetup:
         return len(nao_instaladas) == 0, nao_instaladas
     
     def instalar_dependencias_python(self):
-        """Instala dependências Python"""
-        self._banner("INSTALAÇÃO DE DEPENDÊNCIAS PYTHON")
+        """Instala dependencias Python"""
+        self._banner("INSTALACAO DE DEPENDENCIAS PYTHON")
         
         requirements_path = Path(__file__).parent / "requirements.txt"
         
@@ -96,28 +96,28 @@ class ScalcSetup:
             print(f"  Usando {requirements_path.name}...")
             cmd = [self.python_exe, "-m", "pip", "install", "-r", str(requirements_path)]
         else:
-            print(f"  Arquivo requirements.txt não encontrado!")
-            print("   Deseja instalar as seguintes dependências? (Y/N)\n")
+            print(f"  Arquivo requirements.txt nao encontrado!")
+            print("   Deseja instalar as seguintes dependencias? (Y/N)\n")
             print("   <PySide6, matplotlib, numpy, pandas, scipy, openpyxl>\n")
             resposta = input("   >>: ").strip().lower()
             if resposta == 'n':
-                print("  ✗ Instalação das dependências python cancelada pelo usuário.\n")
+                print("  ✗ Instalacao das dependencias python cancelada pelo usuario.\n")
                 return False
             elif resposta == 'y':
-                print("  Iniciando instalação das dependências...\n")
+                print("  Iniciando instalacao das dependencias...\n")
                 cmd = [
                     self.python_exe, "-m", "pip", "install",
                     "PySide6", "matplotlib", "numpy", "pandas", "scipy", "openpyxl"
                 ]
             else:
-                print("  Resposta inválida. Cancelando a instalação das dependências python...\n") 
+                print("  Resposta invalida. Cancelando a instalacao das dependencias python...\n") 
                 return False
         
         try:
             subprocess.run(cmd, check=True)
             return True
         except subprocess.CalledProcessError:
-            print("  ✗ Erro ao instalar dependências Python")
+            print("  ✗ Erro ao instalar dependencias Python")
             return False
     
     def executar_comando(self, cmd, shell=False, descricao=None):
@@ -134,16 +134,16 @@ class ScalcSetup:
             return False
         except FileNotFoundError:
             if descricao:
-                print(f"  ✗ Comando não encontrado")
+                print(f"  ✗ Comando nao encontrado")
             return False
     
     def instalar_dependencias_sistema_linux(self):
-        """Instala dependências do sistema no Linux"""
-        self._banner("INSTALAÇÃO DE DEPENDÊNCIAS DO SISTEMA (LINUX)")
+        """Instala dependencias do sistema no Linux"""
+        self._banner("INSTALACAO DE DEPENDENCIAS DO SISTEMA (LINUX)")
         
         if not self.distribuicao:
-            print("  ⚠ Distribuição não reconhecida automaticamente.")
-            print("\n  Instale manualmente uma das opções abaixo:\n")
+            print("  ⚠ Distribuicao nao reconhecida automaticamente.")
+            print("\n  Instale manualmente uma das opcoes abaixo:\n")
             print("  Ubuntu/Debian:")
             print("    sudo apt-get update")
             print("    sudo apt-get install -y libxcb-cursor0 libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0\n")
@@ -154,40 +154,40 @@ class ScalcSetup:
             return False
         
         if self.distribuicao == "debian":
-            print("  Distribuição detectada: Ubuntu/Debian")
-            self.executar_comando("sudo apt-get update", shell=True, descricao="Atualizando repositórios")
+            print("  Distribuicao detectada: Ubuntu/Debian")
+            self.executar_comando("sudo apt-get update", shell=True, descricao="Atualizando repositorios")
             self.executar_comando(
                 "sudo apt-get install -y libxcb-cursor0 libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0",
                 shell=True,
-                descricao="Instalando dependências do sistema"
+                descricao="Instalando dependencias do sistema"
             )
         
         elif self.distribuicao == "fedora":
-            print("  Distribuição detectada: Fedora/RHEL")
+            print("  Distribuicao detectada: Fedora/RHEL")
             self.executar_comando(
                 "sudo dnf install -y libxcb xcb-util-cursor libxkbcommon-x11",
                 shell=True,
-                descricao="Instalando dependências do sistema"
+                descricao="Instalando dependencias do sistema"
             )
         
         elif self.distribuicao == "arch":
-            print("  Distribuição detectada: Arch Linux")
+            print("  Distribuicao detectada: Arch Linux")
             self.executar_comando(
                 "sudo pacman -Syu --noconfirm libxcb xcb-util-cursor libxkbcommon-x11",
                 shell=True,
-                descricao="Instalando dependências do sistema"
+                descricao="Instalando dependencias do sistema"
             )
         
         return True
     
     def instalar_dependencias_sistema_macos(self):
-        """Instala dependências do sistema no macOS"""
-        self._banner("INSTALAÇÃO DE DEPENDÊNCIAS DO SISTEMA (MACOS)")
+        """Instala dependencias do sistema no macOS"""
+        self._banner("INSTALACAO DE DEPENDENCIAS DO SISTEMA (MACOS)")
         
         # Verificar Homebrew
         resultado = subprocess.run("which brew", shell=True, capture_output=True)
         if resultado.returncode != 0:
-            print("  ✗ Homebrew não encontrado.")
+            print("  ✗ Homebrew nao encontrado.")
             print("\n  Instale em: https://brew.sh\n")
             return False
         
@@ -196,25 +196,25 @@ class ScalcSetup:
         return True
     
     def instalar_dependencias_sistema(self):
-        """Instala dependências do sistema conforme o SO"""
+        """Instala dependencias do sistema conforme o SO"""
         if self.sistema == "Linux":
             return self.instalar_dependencias_sistema_linux()
         elif self.sistema == "Darwin":
             return self.instalar_dependencias_sistema_macos()
         elif self.sistema == "Windows":
-            print("\n  Nenhuma dependência adicional do sistema é necessária no Windows.\n")
+            print("\n  Nenhuma dependencia adicional do sistema e necessaria no Windows.\n")
             return True
         else:
-            print(f"\n  ✗ Sistema operacional não suportado: {self.sistema}\n")
+            print(f"\n  ✗ Sistema operacional nao suportado: {self.sistema}\n")
             return False
     
     def verificar_dependencias(self):
-        """Verifica as dependências"""
-        self._banner("VERIFICAÇÃO DE DEPENDÊNCIAS - SCalc")
+        """Verifica as dependencias"""
+        self._banner("VERIFICACAO DE DEPENDENCIAS - SCalc")
         
         print(f"Sistema operacional: {self.sistema}")
         if self.distribuicao:
-            print(f"Distribuição detectada: {self.distribuicao.capitalize()}")
+            print(f"Distribuicao detectada: {self.distribuicao.capitalize()}")
         print()
         
         tudo_ok, nao_instaladas = self.verificar_dependencias_python()
@@ -222,41 +222,41 @@ class ScalcSetup:
         return tudo_ok, nao_instaladas
     
     def setup(self):
-        """Verifica e instala dependências conforme necessário"""
-        # Verificar dependências
+        """Verifica e instala dependencias conforme necessario"""
+        # Verificar dependencias
         tudo_ok, nao_instaladas = self.verificar_dependencias()
         
         if tudo_ok:
-            self._banner("SETUP CONCLUÍDO")
-            print("  ✓ TODAS AS DEPENDÊNCIAS JÁ ESTÃO INSTALADAS!")
+            self._banner("SETUP CONCLUIDO")
+            print("  ✓ TODAS AS DEPENDENCIAS JA ESTAO INSTALADAS!")
             print()
             print("Para iniciar o programa, execute:")
             print("  python scalc.py")
             print()
             return 0
         
-        # Se faltam dependências, pedir confirmação
-        print("\nDeseja instalar as dependências ausentes? (Y/N): ", end="")
+        # Se faltam dependencias, pedir confirmacao
+        print("\nDeseja instalar as dependencias ausentes? (Y/N): ", end="")
         resposta = input().strip().lower()
         if resposta == 'n':
-            print("\n✗ Instalação cancelada pelo usuário.\n")
+            print("\n✗ Instalacao cancelada pelo usuario.\n")
             return 1
         elif resposta == 'y':
-            print("\nIniciando instalação das dependências...\n")
+            print("\nIniciando instalacao das dependencias...\n")
         else:
-            print("\nResposta inválida. Cancelando a instalação...\n")
-            print("  ✗ Instalação cancelada.\n")
+            print("\nResposta invalida. Cancelando a instalacao...\n")
+            print("  ✗ Instalacao cancelada.\n")
             return 1
         
-        # Instalar dependências do sistema automaticamente
-        print("\n[1/2] Instalando dependências do sistema...")
+        # Instalar dependencias do sistema automaticamente
+        print("\n[1/2] Instalando dependencias do sistema...")
         if not self.instalar_dependencias_sistema():
-            print("  ⚠ Aviso: Algumas dependências do sistema podem não ter sido instaladas.")
+            print("  ⚠ Aviso: Algumas dependencias do sistema podem nao ter sido instaladas.")
         
-        # Instalar dependências Python
-        print("\n[2/2] Instalando dependências Python...")
+        # Instalar dependencias Python
+        print("\n[2/2] Instalando dependencias Python...")
         if not self.instalar_dependencias_python():
-            print("\n✗  A instalação foi impedida ou falhou!")
+            print("\n✗  A instalacao foi impedida ou falhou!")
             return 1
         
         # Verificar novamente
@@ -264,26 +264,26 @@ class ScalcSetup:
         tudo_ok, _ = self.verificar_dependencias()
         
         # Resultado final
-        self._banner("SETUP CONCLUÍDO")
+        self._banner("SETUP CONCLUIDO")
         
         if tudo_ok:
-            print("  ✓ TODAS AS DEPENDÊNCIAS FORAM INSTALADAS COM SUCESSO!")
+            print("  ✓ TODAS AS DEPENDENCIAS FORAM INSTALADAS COM SUCESSO!")
             print()
             print("Para iniciar o programa, execute:")
             print("  python scalc.py")
             print()
             return 0
         else:
-            print("  ⚠ Setup concluído, mas algumas dependências podem não estar instaladas.")
-            print("    Tente novamente ou verifique a conexão com a internet.")
+            print("  ⚠ Setup concluido, mas algumas dependencias podem nao estar instaladas.")
+            print("    Tente novamente ou verifique a conexao com a internet.")
             print()
             return 1
 
 
 def main():
     """
-    Função principal.
-    Verifica e instala dependências necessárias do sistema e do Python para o SCalc.
+    Funcao principal.
+    Verifica e instala dependencias necessarias do sistema e do Python para o SCalc.
     """
     setup = ScalcSetup()
     setup._banner("SCALC - SETUP")
