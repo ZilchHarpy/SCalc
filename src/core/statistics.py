@@ -11,7 +11,7 @@ import numpy as np
 from collections import defaultdict
 import re
 import math
-from src.utils.parses import eh_erro_instrumental
+from src.utils.parsers import eh_erro_instrumental
 from src.core.exceptions import (
     DadosInvalidosException,
     DadosInsuficientesException,

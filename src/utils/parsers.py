@@ -5,7 +5,7 @@ Módulo de parsing e extração de informações de nomes de colunas em DataFram
 import re
 from typing import Optional
 
-def extrair_prefixo(nome_coluna: str) -> Optional[str]:
+def extrair_prefixo(nome_coluna) -> Optional[str]:
     """
     Extrai o prefixo alfabético de uma coluna (ex: 'x1' -> 'x'; 'temp2' -> 'temp)
 
@@ -31,7 +31,7 @@ def extrair_prefixo(nome_coluna: str) -> Optional[str]:
     match = re.match(r'^([a-zA-Z]+)', nome_coluna.strip())
     return match.group(1) if match else None
 
-def eh_erro_instrumental(nome_coluna: str) -> bool:
+def eh_erro_instrumental(nome_coluna) -> bool:
     """
     verifica se uma coluna representa um erro instrumental
 
