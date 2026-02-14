@@ -11,7 +11,7 @@ Data: 2025
 
 import sys
 import argparse
-from src.core import Calcular_Estatisticas, RegLin
+from src.core import calcular_estatisticas, RegLin
 from src.visualization.plots import PlotarGrafico
 import pandas as pd
 import numpy as np
@@ -42,7 +42,7 @@ def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]",
         
         # Cálculo das estatísticas
         print("\n🔢 Calculando estatísticas...")
-        medias, err_est, err_instr = Calcular_Estatisticas(dados_excel)
+        medias, err_est, err_instr = calcular_estatisticas(dados_excel)
         print(f"✓ Estatísticas calculadas!")
         print(f"  Variáveis encontradas: {', '.join(medias.keys())}")
         
