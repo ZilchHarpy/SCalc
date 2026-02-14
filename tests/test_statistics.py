@@ -1,5 +1,5 @@
 """
-Testes para o módulo de Estatística
+Testes para o modulo de Estatistica
 """
 
 import unittest
@@ -9,7 +9,7 @@ from src.core import Calcular_Estatisticas, Particionar
 
 
 class TestStatistics(unittest.TestCase):
-    """Testes para funções de estatística"""
+    """Testes para funcoes de estatistica"""
     
     def setUp(self):
         """Configura dados de teste"""
@@ -26,20 +26,20 @@ class TestStatistics(unittest.TestCase):
         })
     
     def test_particionar(self):
-        """Testa a função Particionar"""
+        """Testa a funcao Particionar"""
         dados_brutos, erros = Particionar(self.df)
         
-        # Verificar se as chaves esperadas estão presentes
+        # Verificar se as chaves esperadas estao presentes
         self.assertIn('x1', dados_brutos)
         self.assertIn('y1', dados_brutos)
         self.assertIn('xerr_instr', erros)
         self.assertIn('yerr_instr', erros)
     
     def test_calcular_estatisticas(self):
-        """Testa a função Calcular_Estatisticas"""
+        """Testa a funcao Calcular_Estatisticas"""
         medias, erros_est, erros_totais = Calcular_Estatisticas(self.df)
         
-        # Verificar se as variáveis foram calculadas
+        # Verificar se as variaveis foram calculadas
         self.assertIn('x', medias)
         self.assertIn('y', medias)
         

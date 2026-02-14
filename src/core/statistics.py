@@ -1,7 +1,7 @@
 """
-Módulo de Estatística
+Modulo de Estatistica
 
-Contém funções para cálculo de média, erro estatístico, erro instrumental
+Contem funcoes para calculo de media, erro estatistico, erro instrumental
 e erro total a partir de dados em DataFrame.
 """
 
@@ -26,18 +26,18 @@ logger = logging.getLogger(__name__)
 
 def particionar(tabela: pd.DataFrame):
     """
-    Particiona a tabela em dicionários de dados brutos e erros instrumentais.
+    Particiona a tabela em dicionarios de dados brutos e erros instrumentais.
     
     Args:
         tabela (pd.DataFrame): DataFrame com os dados completos
         
     Returns:
-        tuple: (dados_brutos, erros_instrumentais, dados_keys) - dicionários com dados, 
+        tuple: (dados_brutos, erros_instrumentais, dados_keys) - dicionarios com dados, 
                erros instrumentais e lista de chaves
     
     Raises:
-        DadosInvalidosException: Se DataFrame for inválido
-        ColunasInvalidasException: Se não houver colunas de dados válidas
+        DadosInvalidosException: Se DataFrame for invalido
+        ColunasInvalidasException: Se nao houver colunas de dados validas
     
     Examples:
         >>> tabela = pd.DataFrame({
@@ -59,7 +59,7 @@ def particionar(tabela: pd.DataFrame):
     tabela = tabela.dropna(how='all', axis=1)
     
     if tabela.empty:
-        raise DadosInvalidosException("DataFrame contém apenas valores vazios após limpeza")
+        raise DadosInvalidosException("DataFrame contem apenas valores vazios apos limpeza")
     
     # Separar erros dos dados
     erros_list = []
@@ -129,22 +129,22 @@ def particionar(tabela: pd.DataFrame):
 
 def calcular_estatisticas(tabela: pd.DataFrame):
     """
-    Calcula a média, erro estatístico e erro total dos dados.
+    Calcula a media, erro estatistico e erro total dos dados.
     
-    Retorna uma nova tabela, contendo o nome dos dados, a média, o erro estatístico e o erro total.
+    Retorna uma nova tabela, contendo o nome dos dados, a media, o erro estatistico e o erro total.
     
     Args:
         tabela (pd.DataFrame): DataFrame com os dados e erros instrumentais
         
     Returns:
-        pd.DataFrame: DataFrame com as colunas ['Dados', 'Média', 'S_err', 'T_err']
+        pd.DataFrame: DataFrame com as colunas ['Dados', 'Media', 'S_err', 'T_err']
         
     Raises:
-        DadosInvalidosException: Se DataFrame for inválido
-        DadosInsuficientesException: Se não houver medições suficientes
+        DadosInvalidosException: Se DataFrame for invalido
+        DadosInsuficientesException: Se nao houver medicoes suficientes
     """
-    # Validação prévia
-    ValidadorDados.validar_dataframe(tabela, "Tabela de estatísticas")
+    # Validacao previa
+    ValidadorDados.validar_dataframe(tabela, "Tabela de estatisticas")
 
     # Particiona os dados brutos e erros instrumentais
     dados_brutos, erros_instr, dados_keys = particionar(tabela)
@@ -164,7 +164,7 @@ def calcular_estatisticas(tabela: pd.DataFrame):
     for key in dados_brutos:
         medias[key] = float(sum(dados_brutos[key])) / float(len(dados_brutos[key]))
 
-    logger.debug(f"Médias calculadas: {medias}")
+    logger.debug(f"Medias calculadas: {medias}")
 
     # Calcula o erro estatístico e erro total para cada chave
     for key, valores in dados_brutos.items():
@@ -174,16 +174,16 @@ def calcular_estatisticas(tabela: pd.DataFrame):
         erros_est[key] = desvio_padrao[key] / (len(valores) ** 0.5)
         erros_totais[key] = (erros_est[key] ** 2 + erros_instr[key][0] ** 2) ** 0.5
     
-    logger.debug(f"Erros estatísticos: {erros_est}")
+    logger.debug(f"Erros estatisticos: {erros_est}")
     logger.debug(f"Erros totais: {erros_totais}")
     
     # Monta o DataFrame de resultados
     resultado = pd.DataFrame({
         'Dados': list(dados_keys),
-        'Média': [medias[key] for key in dados_keys],
+        'Media': [medias[key] for key in dados_keys],
         'S_err': [erros_est[key] for key in dados_keys],
         'T_err': [erros_totais[key] for key in dados_keys]
     })
 
-    logger.info(f"Estatísticas calculadas com sucesso para {len(resultado)} variáveis")
+    logger.info(f"Estatisticas calculadas com sucesso para {len(resultado)} variaveis")
     return resultado

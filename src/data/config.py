@@ -1,7 +1,7 @@
 """
-Módulo de Configuração
+Modulo de Configuracao
 
-Contém configurações globais e caminhos do projeto.
+Contem configuracoes globais e caminhos do projeto.
 """
 
 import os
@@ -9,13 +9,13 @@ from pathlib import Path
 from typing import Dict, Any
 
 class Config:
-    """Configurações centralizadas do SCalc"""
+    """Configuracoes centralizadas do SCalc"""
     
-    # ============ INFORMAÇÕES DO PROJETO ============
+    # ============ INFORMACOES DO PROJETO ============
     APP_NAME = "SCalc"
     APP_VERSION = "1.0.0"
     APP_AUTHOR = "Caio Aquilino Merino"
-    APP_DESCRIPTION = "Sistema de Cálculo e Análise de Regressão Linear"
+    APP_DESCRIPTION = "Sistema de Calculo e Analise de Regressao Linear"
     
     # ============ CAMINHOS ============
     PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -24,10 +24,10 @@ class Config:
     DOCS_DIR = PROJECT_ROOT / "docs"
     EXAMPLES_DIR = PROJECT_ROOT / "examples"
     
-    # ============ CONFIGURAÇÕES DE PLOT ============
+    # ============ CONFIGURACOES DE PLOT ============
     class Plot:
-        """Configurações de plotagem"""
-        # Estilo padrão do matplotlib
+        """Configuracoes de plotagem"""
+        # Estilo padrao do matplotlib
         STYLE = '_mpl-gallery'
         
         # Tamanho da figura
@@ -45,49 +45,49 @@ class Config:
         MARKERSIZE_PONTOS = 6
         CAPSIZE_ERRO = 5
         
-        # Labels padrão
+        # Labels padrao
         DEFAULT_X_LABEL = "x"
         DEFAULT_Y_LABEL = "y"
-        DEFAULT_TITULO = "Gráfico de Dispersão com Regressão Linear"
+        DEFAULT_TITULO = "Grafico de Dispersao com Regressao Linear"
         
-        # Formatos de exportação suportados
+        # Formatos de exportacao suportados
         FORMATOS_EXPORTACAO = ['png', 'pdf', 'svg', 'jpg', 'eps']
     
-    # ============ CONFIGURAÇÕES DE ESTATÍSTICA ============
+    # ============ CONFIGURACOES DE ESTATISTICA ============
     class Estatistica:
-        """Configurações de análise estatística"""
-        # Critérios de qualidade de R²
+        """Configuracoes de analise estatistica"""
+        # Criterios de qualidade de R²
         R2_EXCELENTE = 0.95
         R2_BOM = 0.85
         R2_MODERADO = 0.70
         
-        # Nível de confiança para erro estatístico (t-Student)
+        # Nivel de confianca para erro estatistico (t-Student)
         NIVEL_CONFIANCA = 0.95
         
-        # Número mínimo de medições recomendado
+        # Numero minimo de medicoes recomendado
         MIN_MEDICOES_RECOMENDADO = 3
         
-        # Precisão de arredondamento para resultados
+        # Precisao de arredondamento para resultados
         PRECISAO_DECIMAL = 6
     
-    # ============ CONFIGURAÇÕES DE VALIDAÇÃO ============
+    # ============ CONFIGURACOES DE VALIDACAO ============
     class Validacao:
-        """Configurações de validação de dados"""
-        # Tamanho máximo de arquivo Excel (em MB)
+        """Configuracoes de validacao de dados"""
+        # Tamanho maximo de arquivo Excel (em MB)
         MAX_TAMANHO_ARQUIVO_MB = 50
         
-        # Número máximo de colunas
+        # Numero maximo de colunas
         MAX_COLUNAS = 100
         
-        # Número máximo de linhas
+        # Numero maximo de linhas
         MAX_LINHAS = 10000
         
         # Permitir valores faltantes?
         PERMITIR_VALORES_FALTANTES = True
     
-    # ============ CONFIGURAÇÕES DE INTERFACE ============
+    # ============ CONFIGURACOES DE INTERFACE ============
     class UI:
-        """Configurações de interface gráfica"""
+        """Configuracoes de interface grafica"""
         # Tamanho da janela
         WINDOW_WIDTH = 1400
         WINDOW_HEIGHT = 900
@@ -99,14 +99,14 @@ class Config:
         FONT_LABEL_SIZE = 10
         FONT_TEXTO_SIZE = 9
         
-        # Temas disponíveis
+        # Temas disponiveis
         TEMAS_DISPONIVEIS = ['claro', 'escuro', 'sistema']
         TEMA_PADRAO = 'sistema'
     
-    # ============ CONFIGURAÇÕES DE LOGGING ============
+    # ============ CONFIGURACOES DE LOGGING ============
     class Logging:
-        """Configurações de logging"""
-        # Nível de log padrão
+        """Configuracoes de logging"""
+        # Nivel de log padrao
         NIVEL_PADRAO = 'INFO'  # DEBUG, INFO, WARNING, ERROR, CRITICAL
         
         # Formato de log
@@ -115,24 +115,24 @@ class Config:
         # Arquivo de log
         ARQUIVO_LOG = Path(__file__).parent.parent.parent / 'logs' / 'scalc.log'
         
-        # Rotação de logs
+        # Rotacao de logs
         MAX_BYTES = 10 * 1024 * 1024  # 10 MB
         BACKUP_COUNT = 3
     
-    # ============ CONFIGURAÇÕES DE INTERNACIONALIZAÇÃO ============
+    # ============ CONFIGURACOES DE INTERNACIONALIZACAO ============
     class I18n:
-        """Configurações de idioma"""
+        """Configuracoes de idioma"""
         IDIOMAS_DISPONIVEIS = ['pt_BR', 'en_US']
         IDIOMA_PADRAO = 'pt_BR'
     
-    # ============ MÉTODOS UTILITÁRIOS ============
+    # ============ METODOS UTILITARIOS ============
     @classmethod
     def get_config_dict(cls) -> Dict[str, Any]:
         """
-        Retorna todas as configurações como dicionário
+        Retorna todas as configuracoes como dicionario
         
         Returns:
-            dict: Dicionário com todas as configurações
+            dict: Dicionario com todas as configuracoes
         """
         return {
             'app': {
@@ -161,10 +161,10 @@ class Config:
         Classifica a qualidade do ajuste baseado em R²
         
         Args:
-            r_squared: Coeficiente de determinação
+            r_squared: Coeficiente de determinacao
             
         Returns:
-            str: Classificação ('excelente', 'bom', 'moderado', 'fraco')
+            str: Classificacao ('excelente', 'bom', 'moderado', 'fraco')
         """
         if r_squared >= cls.Estatistica.R2_EXCELENTE:
             return 'excelente'
@@ -176,7 +176,7 @@ class Config:
             return 'fraco'
 
 
-# ============ CONFIGURAÇÃO DE LOGGING GLOBAL ============
+# ============ CONFIGURACAO DE LOGGING GLOBAL ============
 import logging
 from logging.handlers import RotatingFileHandler
 
@@ -185,12 +185,12 @@ def setup_logging(nivel: str | None = None):
     Configura o sistema de logging do SCalc
     
     Args:
-        nivel: Nível de log (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        nivel: Nivel de log (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     """
     if nivel is None:
         nivel = Config.Logging.NIVEL_PADRAO
     
-    # Criar diretório de logs se não existir
+    # Criar diretorio de logs se nao existir
     log_dir = Config.Logging.ARQUIVO_LOG.parent
     log_dir.mkdir(parents=True, exist_ok=True)
     
@@ -214,7 +214,7 @@ def setup_logging(nivel: str | None = None):
 
 
 # ============ ALIASES PARA COMPATIBILIDADE ============
-# Use a classe Config acima para novas implementações
+# Use a classe Config acima para novas implementacoes
 PROJECT_ROOT = Config.PROJECT_ROOT
 BASE_DIR = Config.PROJECT_ROOT
 SRC_DIR = Config.SRC_DIR
@@ -222,17 +222,17 @@ DATA_DIR = Config.DATA_DIR
 DOCS_DIR = Config.DOCS_DIR
 EXAMPLES_DIR = Config.EXAMPLES_DIR
 
-# Configurações da aplicação (use Config.APP_*)
+# Configuracoes da aplicacao (use Config.APP_*)
 APP_NAME = Config.APP_NAME
 APP_VERSION = Config.APP_VERSION
 APP_DESCRIPTION = Config.APP_DESCRIPTION
 
-# Configurações de visualização (use Config.Plot.*)
+# Configuracoes de visualizacao (use Config.Plot_*)
 PLOT_STYLE = Config.Plot.STYLE
 PLOT_DPI = Config.Plot.FIGURE_DPI
 PLOT_FIGURE_SIZE = (Config.Plot.FIGURE_WIDTH, Config.Plot.FIGURE_HEIGHT)
 
-# Configurações de precisão (use Config.Estatistica.*)
+# Configuracoes de precisao (use Config.Estatistica.*)
 DECIMAL_PLACES = Config.Estatistica.PRECISAO_DECIMAL
 R_SQUARED_THRESHOLD_EXCELLENT = Config.Estatistica.R2_EXCELENTE
 R_SQUARED_THRESHOLD_GOOD = Config.Estatistica.R2_BOM

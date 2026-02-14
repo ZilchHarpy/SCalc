@@ -1,5 +1,5 @@
 """
-Módulo de Testes
+Modulo de Testes
 
-Testes unitários e de integração para o SCalc.
+Testes unitarios e de integracao para o SCalc.
 """
