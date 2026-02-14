@@ -46,8 +46,8 @@ class Config:
         CAPSIZE_ERRO = 5
         
         # Labels padrão
-        DEFAULT_X_LABEL = "log(t) [s]"
-        DEFAULT_Y_LABEL = "log(d) [mm]"
+        DEFAULT_X_LABEL = "x"
+        DEFAULT_Y_LABEL = "y"
         DEFAULT_TITULO = "Gráfico de Dispersão com Regressão Linear"
         
         # Formatos de exportação suportados
