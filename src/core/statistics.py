@@ -5,13 +5,21 @@ Contém funções para cálculo de média, erro estatístico, erro instrumental
 e erro total a partir de dados em DataFrame.
 """
 
+import logging
 import pandas as pd
 import numpy as np
 from collections import defaultdict
 import re
 import math
 from src.utils.parses import eh_erro_instrumental
+from src.core.exceptions import (
+    DadosInvalidosException,
+    DadosInsuficientesException,
+    ColunasInvalidasException
+)
 
+# Configura o logger
+logger = logging.getLogger(__name__)
 
 def particionar(tabela: pd.DataFrame):
     """
@@ -37,9 +45,39 @@ def particionar(tabela: pd.DataFrame):
         >>> erros_instrumentais
         {'a': 0.01, 'b': 0.02, 'c': 0.015, 'd': 0.01}
     """
+    # VALIDAÇÃO 1: DataFrame não pode ser vazio
+    if tabela.empty:
+        raise DadosInvalidosException("DataFrame fornecido está vazio")
+    
+    # VALIDAÇÃO 2: Deve haver pelo menos uma coluna
+    if len(tabela.columns) == 0:
+        raise DadosInvalidosException("DataFrame não possui colunas")
+    
     # Remover linhas e colunas vazias
     tabela = tabela.dropna(how='all', axis=0)
     tabela = tabela.dropna(how='all', axis=1)
+    
+    # VALIDAÇÃO 3: Após limpeza, ainda deve haver dados
+    if tabela.empty:
+        raise DadosInvalidosException("DataFrame contém apenas valores vazios")
+    
+    # Separa os erros dos dados da tabela
+    erros_list = []
+    dados_brutos_list = []
+
+    for coluna in tabela.columns:
+        if eh_erro_instrumental(str(coluna)):
+            erros_list.append(coluna)
+        else:
+            dados_brutos_list.append(coluna)
+    
+    # VALIDAÇÃO 4: Deve haver ao menos uma coluna de dados
+    if not dados_brutos_list:
+        raise ColunasInvalidasException("Nenhuma coluna de dados encontrada")
+    
+    logger.info(f"Particionamento: {len(dados_brutos_list)} colunas de dados, "
+                f"{len(erros_list)} colunas de erro")
+    
 
     # Inicializa dicionários de resultados
     erros_instrumentais_list = [float('nan')]
@@ -50,12 +88,26 @@ def particionar(tabela: pd.DataFrame):
 
     for coluna in tabela.columns:
         if eh_erro_instrumental(coluna):
-            erros_instrumentais_list = tabela[coluna].dropna().tolist()
+            
+            # VALIDAÇÃO 5: Verificar se dados são numéricos
+            dados_serie = tabela[coluna].dropna()
+            try:
+                erros_instrumentais_list = pd.to_numeric(dados_serie).tolist()
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Coluna '{coluna}' contém dados não numéricos, ignorando")
+                continue
+                
         else:
             if 'dados' in str(coluna).lower():
                 dados_keys = tabela[coluna].dropna().tolist()
             else:
-                dados_iteracoes[coluna] = tabela[coluna].dropna().tolist()
+                # VALIDAÇÃO 5: Verificar se dados são numéricos
+                dados_serie = tabela[coluna].dropna()
+                try:
+                    dados_iteracoes[coluna] = pd.to_numeric(dados_serie).tolist()
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"Coluna '{coluna}' contém dados não numéricos, ignorando")
+                continue
             
 
     for key in dados_keys:
@@ -64,6 +116,10 @@ def particionar(tabela: pd.DataFrame):
         for coluna in dados_iteracoes:
             dados_brutos[key].append(dados_iteracoes[coluna][dados_keys.index(key)])
         erros_instrumentais[key].append(erros_instrumentais_list[dados_keys.index(key)])
+
+    # VALIDAÇÃO 6: Deve restar ao menos uma coluna após conversão
+    if not dados_brutos:
+        raise DadosInvalidosException("Nenhuma coluna contém dados numéricos válidos")
 
     return dados_brutos, erros_instrumentais, dados_keys
 
@@ -81,8 +137,19 @@ def calcular_estatisticas(tabela: pd.DataFrame):
         pd.DataFrame: DataFrame com as colunas ['Dados', 'Média', 'S_err', 'T_err']
     """
 
+    # VALIDAÇÃO PRÉVIA
+    if tabela.empty:
+        raise DadosInvalidosException("DataFrame vazio fornecido")
+
     # Particiona os dados brutos e erros instrumentais
     dados_brutos, erros_instr, dados_keys = particionar(tabela)
+
+    # VALIDAÇÃO: Verificar se há dados suficientes
+    total_medicoes = sum(len(valores) for valores in dados_brutos.values())
+    if total_medicoes == 0:
+        raise DadosInsuficientesException("Nenhuma medição encontrada nos dados")
+    
+    logger.info(f"Calculando estatísticas para {len(dados_brutos)} variáveis")
 
     # Inicializa dicionários de resultados
     medias = {}
