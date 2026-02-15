@@ -7,6 +7,7 @@ e calcular parametros estatisticos da reta.
 
 from scipy.stats import linregress
 from typing import Tuple, List
+import numpy as np
 
 
 def RegLin(x: List[float], y: List[float]) -> Tuple[float, float, float]:
@@ -29,7 +30,22 @@ def RegLin(x: List[float], y: List[float]) -> Tuple[float, float, float]:
         R2 indica o quao bem a reta se ajusta aos dados (0 a 1)
     """
     
-    slope, intercept, r_value, p_value, std_err = linregress(x, y)
-
-    # Retorna slope, intercept e R2 (r_value2)
-    return slope, intercept, r_value ** 2
+    # Converter listas para arrays numpy (melhora performance e compatibilidade)
+    x_array = np.array(x, dtype=float)
+    y_array = np.array(y, dtype=float)
+    
+    # Realizar regressao linear
+    # linregress retorna: LinregressResult ou tupla (slope, intercept, rvalue, pvalue, stderr)
+    reg_result = linregress(x_array, y_array)
+    
+    # Acessar valores por indice
+    # Indices: [0]=slope, [1]=intercept, [2]=rvalue, [3]=pvalue, [4]=stderr
+    slope: float = float(reg_result[0])  # type: ignore
+    intercept: float = float(reg_result[1])  # type: ignore
+    r_value: float = float(reg_result[2])  # type: ignore
+    
+    # Calcular R2 (coeficiente de determinacao)
+    r_squared: float = r_value * r_value
+    
+    # Retornar slope, intercept e R2
+    return slope, intercept, r_squared
