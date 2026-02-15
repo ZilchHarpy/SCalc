@@ -24,7 +24,6 @@ def RegLin(x: List[float], y: List[float]) -> Tuple[float, float, float]:
             - slope: coeficiente angular (m)
             - intercept: coeficiente linear (b)
             - r_squared: coeficiente de determinacao (R2)
-            
     Notes:
         A equacao da reta e: y = slope * x + intercept
         R2 indica o quao bem a reta se ajusta aos dados (0 a 1)

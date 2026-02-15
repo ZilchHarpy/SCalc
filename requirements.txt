@@ -14,5 +14,8 @@ matplotlib>=3.7.0
 # Leitura de Excel
 openpyxl>=3.1.0
 
+# Nuitka para build
+nuitka>=4.0.0
+
 # Opcional: Para melhor performance
 xlrd>=2.0.0  # Para ler arquivos .xls antigos

@@ -20,6 +20,11 @@ __pypackages__/
 *.o
 *.obj
 *.lib
+*.psd
+*.xcf
+*.ai
+*_backup.*
+*_old.*
 Scalc.spec
 Scalc.build
 Scalc.dist
