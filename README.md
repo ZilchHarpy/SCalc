@@ -1,362 +1,415 @@
-# SCalc - Sistema de Cálculo e Análise de Regressão Linear
+# SCalc — Sistema de Cálculo e Análise de Regressão Linear
 
-Sistema completo para análise estatística e regressão linear com interface gráfica intuitiva.
+Ferramenta para análise estatística de dados experimentais com suporte a regressão linear, barras de erro e interface gráfica interativa.
 
-## 📋 Características
+---
 
-- ✅ Interface gráfica moderna com PySide6
-- ✅ Visualização interativa com Matplotlib
-- ✅ Cálculo automático de médias e erros estatísticos
-- ✅ Regressão linear com coeficiente de determinação (R²)
-- ✅ Gráficos com barras de erro
-- ✅ Exportação de gráficos (PNG, PDF, SVG)
-- ✅ Modo CLI para processamento em lote
-- ✅ Suporte a arquivos Excel (.xlsx, .xls)
-- ✅ Código modular e bem organizado
-- ✅ Testes unitários inclusos
+## Sumário
 
-## 🚀 Instalação Rápida
+- [Instalação](#instalação)
+- [Como usar](#como-usar)
+  - [Modo GUI](#modo-gui)
+  - [Modo CLI](#modo-cli)
+- [Modelo de tabela](#modelo-de-tabela)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Executar testes](#executar-testes)
+- [Uso programático](#uso-programático)
+- [Build (executável)](#build-executável)
+- [Solução de problemas](#solução-de-problemas)
+- [Documentação adicional](#documentação-adicional)
+- [Contribuindo](#contribuindo)
+- [Licença](#licença)
+- [Autores](#autores)
+- [Suporte](#suporte)
 
-### ⚡ Verificação e Setup Automático (Recomendado)
+---
 
-Todos os scripts de setup foram unificados em `verificar_instalacao.py` que funciona em **Windows, Linux e macOS**.
+## Instalação
 
-**Apenas verificar dependências (sem instalar):**
+### Pré-requisitos
+
+- Python 3.10 ou superior
+- pip
+
+### 1. Ambiente virtual (recomendado)
+
 ```bash
-python verificar_instalacao.py
+python -m venv .venv
+
+# Linux / macOS
+source .venv/bin/activate
+
+# Windows
+.venv\Scripts\activate
 ```
 
-**Instalar tudo automaticamente:**
-```bash
-# Método 1: Python direto (recomendado)
-python verificar_instalacao.py --setup
-
-# Método 2: Atalho no Windows
-python setup.py
-
-# Método 3: Atalho no Linux/macOS
-bash setup.sh
-```
-
-**Ver ajuda completa:**
-```bash
-python verificar_instalacao.py --help
-```
-
-O script detecta automaticamente:
-- ✓ Seu sistema operacional (Windows, Linux, macOS)
-- ✓ Distribuição Linux (Ubuntu/Debian, Fedora/RHEL, Arch)
-- ✓ Instala dependências do sistema necessárias
-- ✓ Instala dependências Python via pip
-- ✓ Verifica novamente se tudo foi instalado
-
-### 📦 Instalação Manual
-
-#### 1. Dependências do Sistema (Linux)
-
-O PySide6 requer bibliotecas do sistema. Execute o comando apropriado:
-
-**Ubuntu/Debian:**
-```bash
-sudo apt-get update
-sudo apt-get install -y libxcb-cursor0 libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0
-```
-
-**Fedora/RHEL:**
-```bash
-sudo dnf install -y libxcb xcb-util-cursor libxkbcommon-x11
-```
-
-**Arch Linux:**
-```bash
-sudo pacman -Syu --noconfirm libxcb xcb-util-cursor libxkbcommon-x11
-```
-
-**macOS:**
-```bash
-brew install qt@6
-```
-
-**Windows:**
-Nenhuma dependência adicional necessária.
-
-#### 2. Dependências Python
+### 2. Dependências Python
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Ou manualmente:
+### 3. Dependências do sistema (somente Linux)
+
+O PySide6 depende de bibliotecas gráficas do sistema que não são instaladas pelo pip. Execute o comando correspondente à sua distribuição:
+
+**Ubuntu / Debian**
 ```bash
-pip install PySide6 matplotlib numpy pandas scipy openpyxl
+sudo apt-get update && sudo apt-get install -y \
+    libxcb-cursor0 libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0
 ```
 
-#### 3. Ambiente Virtual (Opcional mas Recomendado)
-
+**Fedora / RHEL**
 ```bash
-# Criar ambiente
-python -m venv .venv
-
-# Ativar ambiente
-# Linux/macOS:
-source .venv/bin/activate
-# Windows:
-.venv\Scripts\activate
+sudo dnf install -y libxcb xcb-util-cursor libxkbcommon-x11
 ```
 
-## 📖 Como Usar
+**Arch Linux**
+```bash
+sudo pacman -Syu --noconfirm libxcb xcb-util-cursor libxkbcommon-x11
+```
 
-### Modo 1: Interface Gráfica (GUI) - Recomendado
+> Windows e macOS não exigem etapas adicionais.
+
+### 4. Setup assistido (alternativa)
+
+O script `setup.py` detecta o sistema operacional, verifica as dependências e instala o que estiver faltando:
+
+```bash
+python setup.py
+```
+
+---
+
+## Como usar
+
+### Modo GUI
+
+Inicia a interface gráfica (comportamento padrão quando nenhum argumento é passado):
 
 ```bash
 python scalc.py
-```
-
-Ou explicitamente:
-```bash
+# equivalente a:
 python scalc.py --gui
 ```
 
-#### Passo a passo na interface:
+**Fluxo de uso na interface:**
 
-1. **Carregar Arquivo**: Clique em "📁 Selecionar Arquivo Excel"
-2. **Calcular Estatísticas**: Clique em "🔢 Calcular Estatísticas"
-3. **Selecionar Variáveis**: Escolha as variáveis X e Y nos dropdowns
-4. **Calcular Regressão**: Clique em "📈 Calcular Regressão Linear"
-5. **Plotar Gráfico**: Clique em "🎨 Plotar Gráfico"
+1. **Carregar arquivo** — clique em *Selecionar Arquivo Excel* e escolha um `.xlsx`.
+2. **Calcular estatísticas** — clique em *Calcular Estatísticas*. O programa particiona as colunas, calcula médias e erros, e popula os dropdowns de variáveis.
+3. **Selecionar variáveis** — escolha qual variável será o eixo X (independente) e qual será o eixo Y (dependente).
+4. **Calcular regressão** — clique em *Calcular Regressão Linear* para obter a equação `y = mx + b` e o R².
+5. **Plotar gráfico** — clique em *Plotar Gráfico* para exibir o diagrama de dispersão com barras de erro e a reta ajustada.
 
-#### Recursos da interface:
+A interface possui três abas no painel direito:
 
-- **Tab Gráfico**: Visualize o gráfico com barra de ferramentas (zoom, pan, salvar)
-- **Tab Dados**: Veja os dados brutos do arquivo Excel
-- **Tab Estatísticas**: Consulte estatísticas detalhadas de todas as variáveis
+| Aba | Conteúdo |
+|---|---|
+| **Gráfico** | Diagrama de dispersão com reta de regressão e barra de ferramentas do Matplotlib (zoom, pan, exportar) |
+| **Dados** | Tabela com os dados brutos do arquivo carregado |
+| **Estatísticas** | Médias, erros estatísticos e erros totais por variável |
 
-### Modo 2: Linha de Comando (CLI)
+---
 
-Para processamento direto sem interface:
+### Modo CLI
+
+Processa um arquivo sem abrir a interface gráfica. Útil para scripts, notebooks ou automação.
 
 ```bash
-python scalc.py --cli --arquivo dados.xlsx
+python scalc.py --cli --arquivo <caminho_para_arquivo.xlsx>
 ```
 
-Com parâmetros personalizados:
+**Parâmetros disponíveis:**
+
+| Argumento | Alias | Descrição | Padrão |
+|---|---|---|---|
+| `--cli` | — | Ativa o modo linha de comando | — |
+| `--arquivo` | `-f` | Caminho para o arquivo Excel | *(obrigatório no modo CLI)* |
+| `--x-label` | — | Rótulo do eixo X | `"x"` |
+| `--y-label` | — | Rótulo do eixo Y | `"y"` |
+| `--titulo` | — | Título do gráfico | `"Gráfico de Dispersão com Regressão Linear"` |
+
+**Exemplo completo:**
 
 ```bash
 python scalc.py --cli \
-    --arquivo dados.xlsx \
+    --arquivo dados/experimento.xlsx \
     --x-label "Tempo (s)" \
-    --y-label "Distância (m)" \
-    --titulo "Meu Gráfico"
+    --y-label "Deslocamento (m)" \
+    --titulo "Cinemática — Experimento 1"
 ```
 
-#### Argumentos disponíveis:
+O programa imprime no terminal as médias, erros e os coeficientes da regressão, e em seguida exibe o gráfico via Matplotlib.
 
-- `--cli`: Ativa o modo linha de comando
-- `--arquivo` ou `-f`: Caminho para o arquivo Excel (obrigatório no modo CLI)
-- `--x-label`: Label do eixo X (padrão: "log(t) [s]")
-- `--y-label`: Label do eixo Y (padrão: "log(d) [mm]")
-- `--titulo`: Título do gráfico
+---
 
-Para ver todas as opções:
-```bash
-python scalc.py --help
-```
+## Modelo de tabela
 
-## 📊 Formato dos Dados
+O SCalc espera um arquivo Excel com um formato específico. Abaixo está a estrutura esperada e as regras de nomenclatura.
 
-### Estrutura esperada do arquivo Excel:
+### Estrutura esperada
 
-| x1   | x2   | x3   | xerr_instr | y1   | y2   | y3   | yerr_instr |
-|------|------|------|------------|------|------|------|------------|
-| 1.2  | 1.3  | 1.1  | 0.05       | 2.4  | 2.5  | 2.3  | 0.1        |
-| 2.3  | 2.4  | 2.2  | 0.05       | 4.6  | 4.8  | 4.5  | 0.1        |
+| Dados | 1 | 2 | 3 | I_err |
+|-------|---|---|---|-------|
+| a\_1  | 1.2 | 1.3 | 1.1 | 0.05 |
+| a\_2  | 2.3 | 2.4 | 2.2 | 0.05 |
+| a\_3  | 3.5 | 3.6 | 3.4 | 0.05 |
+| b\_1  | 2.4 | 2.5 | 2.3 | 0.10 |
+| b\_2  | 4.6 | 4.8 | 4.5 | 0.10 |
+| b\_3  | 7.0 | 7.1 | 6.9 | 0.10 |
 
-**Convenção de nomenclatura:**
-- **Dados experimentais**: `x1`, `x2`, `x3`, `y1`, `y2`, `y3`, etc.
-- **Erros instrumentais**: `xerr_instr`, `yerr_instr`, etc.
+### Regras de nomenclatura
 
-**Notas importantes:**
-- Múltiplas medições da mesma variável devem ter o mesmo prefixo (ex: `x1`, `x2`, `x3`)
-- O programa calcula automaticamente a média e os erros estatísticos
-- Células vazias são ignoradas
+**Coluna `Dados`** — lista os identificadores de cada ponto. O formato é `<prefixo>_<iteração>`, onde o prefixo agrupa pontos de uma mesma variável física. Exemplos válidos: `a_1`, `temp_2`, `pressao_3`.
 
-## 📁 Estrutura do Projeto
+**Colunas numéricas (`1`, `2`, `3`, …)** — cada coluna representa uma repetição da medição. O SCalc usa todas as repetições disponíveis por linha para calcular a média e o erro estatístico (desvio padrão da média).
+
+**Coluna de erro instrumental (`I_err`)** — contém o erro do instrumento de medição para cada ponto. O nome deve conter `err` (ou `error` / `erro`) **e** alguma variante de `i` / `instr` / `instrumental`. Exemplos válidos: `I_err`, `i_error`, `xerr_instr`, `instr_err`. A detecção é insensível a maiúsculas.
+
+### Cálculo dos erros
+
+O programa propaga os erros de forma quadrática:
 
 ```
-scalc/
-├── scalc.py                          # Arquivo principal
-├── setup.py                          # Script de setup (Python)
-├── setup.sh                          # Script de setup (Bash)
-├── requirements.txt                  # Dependências Python
+Erro estatístico  = desvio_padrão / √n
+Erro total        = √(erro_estatístico² + erro_instrumental²)
+```
+
+### Notas
+
+- Células vazias em colunas numéricas são ignoradas — repetições podem variar por ponto.
+- Pelo menos dois grupos (prefixos distintos) são necessários para a regressão linear.
+- Todos os grupos usados na regressão devem ter o mesmo número de pontos (mesma quantidade de identificadores `<prefixo>_<n>`).
+
+---
+
+## Estrutura do projeto
+
+```
+SCalc/
+├── scalc.py            # Ponto de entrada — decide GUI ou CLI
+├── build.py            # Script de build com PyInstaller
+├── setup.py            # Setup assistido de dependências
+├── requirements.txt    # Dependências Python
 │
 ├── src/
 │   ├── __init__.py
-│   ├── core/                         # Lógica de negócio
+│   ├── core/
 │   │   ├── __init__.py
-│   │   ├── statistics.py             # Cálculos estatísticos
-│   │   └── regression.py             # Regressão linear
+│   │   ├── statistics.py   # particionar(), calcular_estatisticas()
+│   │   ├── regression.py   # RegLin()
+│   │   └── exceptions.py   # Exceções customizadas
 │   │
-│   ├── visualization/                # Visualização e interface
+│   ├── visualization/
 │   │   ├── __init__.py
-│   │   ├── gui.py                    # Interface gráfica (PySide6)
-│   │   └── plots.py                  # Plotagem de gráficos
+│   │   ├── gui.py          # Interface PySide6
+│   │   └── plots.py        # PlotarGrafico() para o modo CLI
 │   │
-│   ├── data/                         # Dados e configuração
+│   ├── data/
 │   │   ├── __init__.py
-│   │   └── config.py                 # Configurações globais
+│   │   ├── config.py       # Configurações globais (Config)
+│   │   └── test_table.xlsx # Tabela de exemplo
 │   │
-│   └── utils/                        # Utilidades gerais
-│       └── __init__.py
+│   └── utils/
+│       ├── __init__.py
+│       ├── parsers.py      # extrair_prefixo(), eh_erro_instrumental()
+│       └── validador.py    # ValidadorDados
 │
-├── tests/                            # Testes unitários
+├── tests/
 │   ├── __init__.py
-│   ├── test_statistics.py            # Testes de estatística
-│   └── test_regression.py            # Testes de regressão
+│   ├── test_statistics.py
+│   ├── test_regression.py
+│   └── test_parsers.py
 │
-├── docs/                             # Documentação
-│   ├── GUIA_VISUAL.md                # Guia visual de uso
-│   ├── PROJETO_COMPLETO.md           #
-│   ├── API.md (futuro)               # Documentação de API
-│   └── TROUBLESHOOTING.md (futuro)   # Solução de problemas
+├── assets/
+│   ├── scalc_icon.ico
+│   └── scalc_icon.png
 │
-└── examples/                         # Exemplos de uso
-    └── data/
-        └── sample_data.xlsx
+├── examples/
+│   └── gerar_dados_exemplo.py
+│
+├── documents/
+│   ├── GUIA_VISUAL.md
+│   ├── PROJETO_COMPLETO.md
+│   └── LICENSE
+│
+└── logs/               # Gerado automaticamente em tempo de execução
 ```
 
-## 🎯 Funcionalidades
+---
 
-### Cálculos Estatísticos
+## Executar testes
 
-- **Média**: Calculada a partir de múltiplas medições
-- **Erro Estatístico**: Erro padrão da média com distribuição t de Student
-- **Erro Instrumental**: Lido diretamente do arquivo
-- **Erro Total**: Propagação quadrática dos erros
-
-### Regressão Linear
-
-- **Método dos Mínimos Quadrados**: Usando `scipy.stats.linregress`
-- **Coeficiente de Determinação (R²)**: Mede a qualidade do ajuste (0 a 1)
-- **Equação da reta**: y = mx + b
-
-#### Interpretação de R²:
-
-- **R² > 0.95**: Excelente ajuste
-- **R² > 0.85**: Bom ajuste
-- **R² > 0.70**: Ajuste moderado
-- **R² < 0.70**: Ajuste fraco
-
-### Visualização
-
-- Gráfico de dispersão com barras de erro
-- Reta de regressão linear
-- Ferramentas interativas (zoom, pan, salvar)
-- Exportação em diversos formatos
-
-## 🧪 Executar Testes
+Os testes usam o módulo `unittest` da biblioteca padrão do Python. Execute a partir da raiz do projeto:
 
 ```bash
-# Executar todos os testes
-python -m unittest discover tests/
+# Todos os testes (recomendado — garante que o sys.path está correto)
+python -m unittest discover -s . -p "test_*.py" -v
 
-# Executar teste específico
-python -m unittest tests.test_statistics
-python -m unittest tests.test_regression
+# Suite específica
+python -m unittest discover -s . -p "test_statistics.py"
+python -m unittest discover -s . -p "test_regression.py"
+python -m unittest discover -s . -p "test_parsers.py"
 ```
 
-## 📝 Uso Programático
+**Cobertura por arquivo:**
+
+| Arquivo | Testes | O que cobre |
+|---|---|---|
+| `test_statistics.py` | 18 | `particionar()`, `calcular_estatisticas()`, propagação de erros, NaN, exceções |
+| `test_regression.py` | 7 | `RegLin()`, reta perfeita, intercepto, dados com ruído, caso mínimo (2 pontos), R² |
+| `test_parsers.py` | 17 | `extrair_prefixo()`, `eh_erro_instrumental()`, `contar()`, falso positivo documentado |
+
+---
+
+## Uso programático
+
+O SCalc pode ser usado como biblioteca diretamente em outros scripts Python:
 
 ```python
-from src.core import Calcular_Estatisticas, RegLin
-from src.visualization.plots import PlotarGrafico
 import pandas as pd
 import numpy as np
+from src.core import calcular_estatisticas, RegLin
+from src.core.statistics import particionar
+from src.visualization.plots import PlotarGrafico
 
 # Carregar dados
-dados = pd.read_excel("dados.xlsx")
+dados = pd.read_excel("src/data/test_table.xlsx")
 
-# Calcular estatísticas
-medias, erros_est, erros_totais = Calcular_Estatisticas(dados)
+# Calcular estatísticas — retorna um DataFrame com colunas:
+# ['Dados', 'Media', 'S_err', 'T_err']
+stats = calcular_estatisticas(dados)
+print(stats)
 
-# Preparar dados
-x = np.array(medias['x'])
-y = np.array(medias['y'])
-x_err = np.array(erros_est['x'])
-y_err = np.array(erros_est['y'])
+# Particionar dados brutos (para extrair médias por grupo)
+dados_brutos, erros_instr, dados_keys = particionar(dados)
 
-# Calcular regressão
+# Montar vetores x e y a partir dos grupos de interesse
+prefixo_x, prefixo_y = "a", "b"
+
+x = [sum(v) / len(v) for v in sorted(dados_brutos[prefixo_x].values())]
+y = [sum(v) / len(v) for v in sorted(dados_brutos[prefixo_y].values())]
+
+# Regressão linear
 slope, intercept, r_squared = RegLin(x, y)
+print(f"y = {slope:.4f}x + {intercept:.4f}   R² = {r_squared:.4f}")
 
 # Plotar
+x_arr, y_arr = np.array(x), np.array(y)
 PlotarGrafico(
-    set(zip(x, y)),
-    x_err.tolist(),
-    y_err.tolist(),
-    str_x="X (unidade)",
+    set(zip(x_arr, y_arr)),
+    erros_x=[0.0] * len(x),
+    erros_y=[0.0] * len(y),
     slope=slope,
     intercept=intercept,
-    str_y="Y (unidade)",
-    titulo="Regressão Linear"
+    str_x="Variável A",
+    str_y="Variável B",
+    titulo="Exemplo de uso programático",
 )
-
-print(f"Equação: y = {slope:.4f}x + {intercept:.4f}")
-print(f"R² = {r_squared:.4f}")
 ```
 
-## 🔧 Solução de Problemas
+---
 
-### Erro: "ModuleNotFoundError: No module named 'PySide6'"
+## Build (executável)
 
+Para gerar um executável portável (sem precisar de Python instalado na máquina alvo), instale o PyInstaller e use `build.py`:
+
+```bash
+pip install pyinstaller
+
+# Build padrão — arquivo único, console visível (CLI e GUI funcionais)
+python build.py -y
+
+# Build em modo diretório — pasta com múltiplos arquivos, inicia mais rápido
+python build.py --onedir -y
+
+# Build somente para GUI — oculta o console (CLI ficará silencioso)
+python build.py --windowed -y
+```
+
+O executável gerado estará em `dist/SCalc` (ou `dist/SCalc.exe` no Windows).
+
+> **Nota sobre `--windowed`:** ocultar o console é recomendado apenas se você não usa o modo CLI. Com essa flag ativa, o modo `--cli` ainda funciona tecnicamente, mas não exibe nenhuma saída no terminal.
+
+---
+
+## Solução de problemas
+
+**`ModuleNotFoundError: No module named 'PySide6'`**
 ```bash
 pip install PySide6
 ```
 
-### Erro: "qt.qpa.plugin: Could not load the Qt platform plugin"
+**`qt.qpa.plugin: Could not load the Qt platform plugin` (Linux)**
 
-Execute o script de setup:
+Instale as dependências do sistema listadas na seção [Instalação](#instalação) ou execute:
 ```bash
-bash setup.sh          # Linux/macOS
-python setup.py        # Windows
+python setup.py
 ```
 
-### Gráfico não aparece (CLI)
+**Gráfico não aparece no modo CLI**
 
-Certifique-se de que o backend do matplotlib está configurado corretamente.
+O Matplotlib precisa de um backend gráfico disponível. No Linux sem display (ex: SSH sem `-X`), exporte a variável:
+```bash
+export DISPLAY=:0
+python scalc.py --cli --arquivo dados.xlsx
+```
+Ou use o backend `Agg` para salvar em arquivo em vez de exibir.
 
-### Arquivo não encontrado
+**`DadosInvalidosException: Mínimo de 2 grupos necessário`**
 
-- Verifique o caminho do arquivo
-- Use caminhos absolutos ou relativos corretos
-- No Windows, use barras normais (`/`) ou duplas (`\\`)
+O arquivo não possui pelo menos dois prefixos distintos na coluna `Dados`. Revise a [estrutura da tabela](#modelo-de-tabela).
 
-## 📚 Documentação Adicional
+**`DadosInvalidosException: Grupos com tamanhos diferentes`**
 
-No diretório docs/
-- [GUIA_VISUAL.md](docs/GUIA_VISUAL.md) - Guia visual detalhado
-- [PROJETO_COMPLETO.md](PROJETO_COMPLETO.md) - Especificações técnicas completas
+Os dois prefixos selecionados para X e Y têm quantidades diferentes de pontos (ex: `a` tem 3 entradas e `b` tem 4). Todos os grupos usados na regressão devem ter o mesmo número de iterações.
 
-## 🤝 Contribuindo
+**Build falha com erro de módulo não encontrado**
 
-Sugestões e melhorias são bem-vindas! Sinta-se à vontade para:
+```bash
+pip install --upgrade pyinstaller
+pip install -r requirements.txt
+python build.py --onedir -y   # modo onedir costuma ser mais tolerante
+```
 
-1. Reportar bugs
-2. Sugerir novas funcionalidades
-3. Melhorar a documentação
+---
 
-## 📄 Licença
+## Documentação adicional
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+- [`documents/GUIA_VISUAL.md`](documents/GUIA_VISUAL.md) — capturas de tela e guia visual passo a passo
+- [`documents/PROJETO_COMPLETO.md`](documents/PROJETO_COMPLETO.md) — especificações técnicas detalhadas
+- [`examples/gerar_dados_exemplo.py`](examples/gerar_dados_exemplo.py) — script para gerar tabelas de exemplo
 
-## 👥 Autores
+---
+
+## Contribuindo
+
+Contribuições são bem-vindas. Para propor melhorias:
+
+1. Faça um fork do repositório
+2. Crie uma branch descritiva: `git checkout -b feature/nome-da-feature`
+3. Implemente as mudanças com testes correspondentes
+4. Abra um Pull Request descrevendo o que foi alterado e por quê
+
+Para reportar bugs ou sugerir funcionalidades, abra uma [issue](https://github.com/ZilchHarpy/SCalc/issues).
+
+---
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT. Veja [`documents/LICENSE`](documents/LICENSE) para o texto completo.
+
+---
+
+## Autores
 
 **Caio Aquilino Merino**
 - GitHub: [@ZilchHarpy](https://github.com/ZilchHarpy)
 - Email: caioaquilinomerino@gmail.com
 
-## 📞 Suporte
-
-Se encontrar algum problema, abra uma [issue](https://github.com/ZilchHarpy/SCalc/issues) no GitHub.
-
 ---
 
-⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!
+## Suporte
+
+- **Bugs e perguntas:** abra uma [issue no GitHub](https://github.com/ZilchHarpy/SCalc/issues)
+- **Contato direto:** caioaquilinomerino@gmail.com

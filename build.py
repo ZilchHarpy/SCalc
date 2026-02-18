@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Script de build usando Nuitka (compila para C++)
-Características:
-- Compila Python para C++ nativo
-- Muito mais rápido que PyInstaller
-- Suporta Windows, Linux e macOS
-- Opções de build: onefile ou standalone
+Script de build do SCalc usando PyInstaller.
+
+Uso:
+    python build.py               # Build padrão (onefile, sem confirmação em CI)
+    python build.py --onedir      # Build em modo diretório (inicialização mais rápida)
+    python build.py --windowed    # Oculta o console (somente GUI, quebra o modo CLI)
+    python build.py --no-clean    # Não remove builds anteriores
+    python build.py -y            # Sem confirmação interativa
 """
 
 import subprocess
@@ -16,367 +18,330 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 
-class NuitkaBuilder:
-    """Gerenciador de build com Nuitka"""
+
+class PyInstallerBuilder:
+    """Gerenciador de build com PyInstaller."""
 
     def __init__(self):
         self.sistema = platform.system()
         self.arquitetura = platform.machine()
         self.python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
         self.project_root = Path(__file__).parent
-        self.dist_dir = self.project_root / 'dist'
+        self.dist_dir = self.project_root / "dist"
+        self.build_dir = self.project_root / "build"
 
-    def verificar_nuitka(self):
-        """Verifica se Nuitka está instalado"""
+    # ------------------------------------------------------------------ #
+    #  Verificação                                                         #
+    # ------------------------------------------------------------------ #
+
+    def verificar_pyinstaller(self) -> bool:
+        """Verifica se o PyInstaller está instalado."""
         try:
-            import nuitka
-            print("✓ Nuitka instalado")
+            import PyInstaller  # noqa: F401
+            versao = __import__("PyInstaller").__version__
+            print(f"✓ PyInstaller {versao} encontrado")
             return True
         except ImportError:
-            print("❌ Nuitka não instalado!")
-            print("\nInstale com:")
-            print("  pip install nuitka")
+            print("✗ PyInstaller não instalado.")
+            print("  Instale com:  pip install pyinstaller")
             return False
-        
-    def verificar_compilador(self):
-        """Verifica se o compilador C++ está disponível"""
-        if self.sistema == 'Windows':
-            print("ℹ️  Windows: Nuitka baixará MinGW64 automaticamente se necessário")
-            return True
-        elif self.sistema == 'Linux':
-            resultado = subprocess.run('gcc --version', shell=True, capture_output=True)
-            if resultado.returncode == 0:
-                print("✓ GCC encontrado")
-                return True
-            else:
-                print("⚠️  GCC não encontrado!")
-                print("   Instale com: sudo apt install build-essential")
-                return False
-        elif self.sistema == 'Darwin':  # macOS
-            resultado = subprocess.run('xcode-select -p', shell=True, capture_output=True)
-            if resultado.returncode == 0:
-                print("✓ Xcode Command Line Tools encontrado")
-                return True
-            else:
-                print("⚠️  Xcode Command Line Tools não encontrado!")
-                print("   Instale com: xcode-select --install")
-                return False
-        return True # Para outros sistemas, confiar que o compilador está presente
-    
+
+    # ------------------------------------------------------------------ #
+    #  Limpeza                                                             #
+    # ------------------------------------------------------------------ #
+
     def limpar_builds_anteriores(self):
-        """Remove builds anteriores"""
-        dirs_limpar = ['build', 'dist', '__pycache__']
-        
-        for dir_name in dirs_limpar:
-            dir_path = self.project_root / dir_name
-            if dir_path.exists():
-                print(f"🗑️  Removendo {dir_name}/")
-                shutil.rmtree(dir_path, ignore_errors=True)
-    
-    def get_comando_nuitka(self, modo: str = 'onefile') -> list:
-        """
-        Gera o comando Nuitka com todas as flags
-        
-        Args:
-            modo: 'onefile' ou 'standalone'
-        """
-        comando = [
-            sys.executable, '-m', 'nuitka',
-            
-            # ===== MODO DE BUILD =====
-            '--standalone',  # Sempre standalone
-        ]
-        
-        # Adicionar --onefile se solicitado
-        if modo == 'onefile':
-            comando.append('--onefile')
-        
-        # ===== PLUGINS E INCLUDES =====
-        comando.extend([
-            # Plugin PySide6 (crítico!)
-            '--enable-plugin=pyside6',
-            
-            # Incluir pacotes completos
-            '--include-package=matplotlib',
-            '--include-package=numpy',
-            '--include-package=pandas',
-            '--include-package=scipy',
-            '--include-package=openpyxl',
-            '--include-package=src',  # TODO nosso código
-            
-            # Incluir módulos específicos que podem ser importados dinamicamente
-            '--include-module=src.visualization.gui',
-            '--include-module=src.core',
-            '--include-module=src.utils',
-        ])
-        
-        # ===== OTIMIZAÇÕES =====
-        comando.extend([
-            '--lto=yes',  # Link Time Optimization
-            '--assume-yes-for-downloads',  # Download automático de dependências
-        ])
-        
-        # ===== OUTPUT =====
-        comando.extend([
-            '--output-dir=dist',
-            '--output-filename=SCalc',
-        ])
-        
-        # ===== CONFIGURAÇÕES ESPECÍFICAS DO SO =====
-        if self.sistema == 'Windows':
-            comando.extend([
-                '--windows-console-mode=disable',  # Remove console preto
-                '--windows-company-name=Caio Aquilino Merino',
-                '--windows-product-name=SCalc',
-                '--windows-product-version=1.0.0',
-                '--windows-file-description=Sistema de Análise de Regressão Linear',
-            ])
-            
-            # Ícone (se existir)
-            icone_path = self.project_root / 'assets' / 'icon.ico'
-            if icone_path.exists():
-                comando.append(f'--windows-icon-from-ico={icone_path}')
-        
-        elif self.sistema == 'Linux':
-            comando.extend([
-                '--linux-icon=assets/icon.png',  # Se tiver
-            ])
-        
-        elif self.sistema == 'Darwin':  # macOS
-            comando.extend([
-                '--macos-create-app-bundle',
-                '--macos-app-name=SCalc',
-            ])
-        
-        # ===== ARQUIVO PRINCIPAL =====
-        comando.append('scalc.py')
-        
-        return comando
-    
-    def exibir_info_build(self, modo: str):
-        """Exibe informações sobre o build"""
-        print("\n" + "="*70)
-        print(f"  BUILD COM NUITKA - SCalc v1.0")
-        print("="*70)
-        print(f"\n📊 Informações do Sistema:")
-        print(f"   Sistema Operacional: {self.sistema}")
-        print(f"   Arquitetura: {self.arquitetura}")
-        print(f"   Python: {self.python_version}")
-        print(f"\n📦 Configuração de Build:")
-        print(f"   Modo: {modo.upper()}")
-        print(f"   Diretório de saída: {self.dist_dir}")
+        """Remove artefatos de builds anteriores."""
+        for alvo in ["build", "dist"]:
+            path = self.project_root / alvo
+            if path.exists():
+                print(f"  Removendo {alvo}/")
+                shutil.rmtree(path, ignore_errors=True)
 
-        # Estimativas
-        if modo == 'onefile':
-            print(f"\n📏 Estimativas:")
-            print(f"   Tamanho final: ~200-250 MB")
-            print(f"   Tempo de build: 10-30 minutos")
-            print(f"   Tempo de inicialização: ~2-5 segundos")
-        
+        for spec in self.project_root.glob("*.spec"):
+            print(f"  Removendo {spec.name}")
+            spec.unlink()
+
+    # ------------------------------------------------------------------ #
+    #  Construção do comando                                               #
+    # ------------------------------------------------------------------ #
+
+    def _icone(self) -> Path | None:
+        """Retorna o caminho do ícone adequado ao sistema operacional."""
+        assets = self.project_root / "assets"
+        if self.sistema == "Windows":
+            candidate = assets / "scalc_icon.ico"
+        elif self.sistema == "Darwin":
+            candidate = assets / "scalc_icon.icns"
         else:
-            print(f"\n📏 Estimativas:")
-            print(f"   Tamanho final: ~300-400 MB (múltiplos arquivos)")
-            print(f"   Tempo de build: 10-30 minutos")
-            print(f"   Tempo de inicialização: <1 segundo")
-        
-        print(f"\n⚠️  Avisos:")
-        print(f"   • Primeira compilação é lenta!")
-        print(f"   • Requer ~2GB de RAM durante compilação")
-        print(f"   • Não feche o terminal durante o processo")
+            return None
 
-    def confirmar_build(self) -> bool:
-        """Solicita confirmação do usuário"""
-        print("\n" + "-"*70)
-        resposta = input("Deseja continuar com o build? (Y/N): ").strip().lower()
-        return resposta == 'y'
-    
-    def executar_build(self, modo: str = 'onefile') -> int:
+        return candidate if candidate.exists() else None
+
+    def get_comando(self, modo: str, windowed: bool) -> list[str]:
         """
-        Executa o build
-        
+        Monta o comando PyInstaller completo.
+
         Args:
-            modo: 'onefile' ou 'standalone'
-            
-        Returns:
-            int: 0 se sucesso, 1 se falha
+            modo: ``'onefile'`` ou ``'onedir'``.
+            windowed: Se True, oculta o console no Windows/macOS.
+                      ATENÇÃO: ocultar o console quebra o modo CLI.
         """
-        inicio = datetime.now()
-        
-        comando = self.get_comando_nuitka(modo)
-        
-        print("\n🚀 Iniciando compilação...")
-        print(f"\n💻 Comando:\n   {' '.join(comando)}\n")
-        print("-"*70)
-        print("Aguarde... (isso pode demorar 10-30 minutos)")
-        print("-"*70 + "\n")
+        cmd = [sys.executable, "-m", "PyInstaller"]
 
-        # Executar Nuitka
-        resultado = subprocess.run(comando)
-        
-        fim = datetime.now()
-        duracao = fim - inicio
+        # Modo de empacotamento
+        cmd.append("--onefile" if modo == "onefile" else "--onedir")
+
+        # Janela de console
+        # --windowed oculta o console no Windows/macOS — útil para build
+        # exclusivo de GUI. Para manter o modo CLI funcional, não usar.
+        if windowed and self.sistema in ("Windows", "Darwin"):
+            cmd.append("--windowed")
+
+        # Caminhos de saída
+        cmd += [
+            "--name", "SCalc",
+            "--distpath", str(self.dist_dir),
+            "--workpath", str(self.build_dir),   # flag correta do PyInstaller
+            "--specpath", str(self.project_root),
+        ]
+
+        # Hidden imports — pacotes que o PyInstaller não detecta
+        # automaticamente por importação dinâmica ou sub-módulos.
+        hidden_imports = [
+            # scipy: sub-módulos usados por linregress
+            "scipy.stats",
+            "scipy.stats._stats_py",
+            "scipy.linalg",
+            "scipy.optimize",
+            "scipy._lib.messagestream",
+            # pandas / numpy internos
+            "pandas._libs.tslibs.np_datetime",
+            "pandas._libs.tslibs.nattype",
+            "pandas._libs.tslibs.timedeltas",
+            "pandas._libs.tslibs.offsets",
+            # openpyxl
+            "openpyxl.styles",
+            "openpyxl.utils",
+            # matplotlib backend
+            "matplotlib.backends.backend_qt5agg",
+            "matplotlib.backends.backend_qtagg",
+            # PySide6
+            "PySide6.QtCore",
+            "PySide6.QtGui",
+            "PySide6.QtWidgets",
+            # módulos internos do SCalc
+            "src.core",
+            "src.core.statistics",
+            "src.core.regression",
+            "src.core.exceptions",
+            "src.visualization",
+            "src.visualization.gui",
+            "src.visualization.plots",
+            "src.utils",
+            "src.utils.parsers",
+            "src.utils.validador",
+            "src.data",
+            "src.data.config",
+        ]
+
+        for imp in hidden_imports:
+            cmd += ["--hidden-import", imp]
+
+        # Dados extras (assets)
+        assets = self.project_root / "assets"
+        if assets.exists():
+            sep = os.pathsep            # ';' no Windows, ':' no Unix
+            cmd += ["--add-data", f"{assets}{sep}assets"]
+
+        # Ícone
+        icone = self._icone()
+        if icone:
+            cmd += ["--icon", str(icone)]
+
+        # Otimização — nível 1 é seguro; nível 2 pode corromper docstrings
+        # usadas por bibliotecas científicas (scipy, numpy).
+        cmd += ["--optimize", "1"]
+
+        # Ponto de entrada
+        cmd.append("scalc.py")
+
+        return cmd
+
+    # ------------------------------------------------------------------ #
+    #  Exibição                                                            #
+    # ------------------------------------------------------------------ #
+
+    def exibir_info(self, modo: str, windowed: bool):
+        print(f"\n{'='*65}")
+        print(f"  BUILD — SCalc  |  PyInstaller  |  {self.sistema} {self.arquitetura}")
+        print(f"{'='*65}")
+        print(f"  Python   : {self.python_version}")
+        print(f"  Modo     : {modo.upper()}")
+        print(f"  Windowed : {'SIM  ⚠ CLI ficará mudo' if windowed else 'NÃO  (CLI funcional)'}")
+        print(f"  Saída    : {self.dist_dir}")
+
+        estimativas = {
+            "onefile": ("~150–250 MB", "3–6 min", "3–6 s"),
+            "onedir":  ("~200–350 MB (pasta)", "1–3 min", "1–2 s"),
+        }
+        tam, tempo, init = estimativas[modo]
+        print(f"\n  Tamanho estimado       : {tam}")
+        print(f"  Tempo de build         : {tempo}")
+        print(f"  Tempo de inicialização : {init}\n")
+
+    # ------------------------------------------------------------------ #
+    #  Execução                                                            #
+    # ------------------------------------------------------------------ #
+
+    def executar_build(self, modo: str, windowed: bool) -> int:
+        """
+        Executa o PyInstaller.
+
+        Returns:
+            0 em caso de sucesso, 1 em caso de falha.
+        """
+        cmd = self.get_comando(modo, windowed)
+
+        print(f"Comando:\n  {' '.join(cmd)}\n")
+        print("-" * 65)
+        print("Aguarde… (pode levar alguns minutos)")
+        print("-" * 65 + "\n")
+
+        inicio = datetime.now()
+        resultado = subprocess.run(cmd)
+        duracao = datetime.now() - inicio
 
         if resultado.returncode == 0:
-            self.exibir_sucesso(modo, duracao)
+            self._exibir_sucesso(modo, duracao)
             return 0
         else:
-            self.exibir_falha()
+            self._exibir_falha()
             return 1
-        
-    def exibir_sucesso(self, modo: str, duracao):
-        """Exibe mensagem de sucesso"""
-        print("\n" + "="*70)
-        print("  ✅ BUILD CONCLUÍDO COM SUCESSO!")
-        print("="*70)
-        
-        # Localizar executável
-        if self.sistema == 'Windows':
-            exe_nome = 'SCalc.exe'
-        else:
-            exe_nome = 'SCalc'
-        
-        if modo == 'onefile':
+
+    def _exibir_sucesso(self, modo: str, duracao):
+        exe_nome = "SCalc.exe" if self.sistema == "Windows" else "SCalc"
+
+        if modo == "onefile":
             exe_path = self.dist_dir / exe_nome
         else:
-            exe_path = self.dist_dir / 'SCalc.dist' / exe_nome
-        
-        print(f"\n📦 Executável criado:")
-        print(f"   Localização: {exe_path}")
-        
-        # Tamanho do arquivo
+            exe_path = self.dist_dir / "SCalc" / exe_nome
+
+        print(f"\n{'='*65}")
+        print("  ✓ BUILD CONCLUÍDO COM SUCESSO!")
+        print(f"{'='*65}")
+        print(f"  Executável : {exe_path}")
+
         if exe_path.exists():
-            tamanho_bytes = exe_path.stat().st_size
-            tamanho_mb = tamanho_bytes / (1024 * 1024)
-            print(f"   Tamanho: {tamanho_mb:.1f} MB")
-        
-        print(f"\n⏱️  Tempo de compilação: {duracao}")
-        
-        print("\n💡 Próximos passos:")
-        print("   1. Teste o executável:")
-        if self.sistema == 'Windows':
-            print(f"      {exe_path}")
-        else:
-            print(f"      ./{exe_path}")
-        print("   2. Teste em uma máquina limpa (sem Python)")
-        print("   3. Crie um instalador com Inno Setup (Windows)")
-        print("   4. Publique no GitHub Releases")
-        print("")
+            tam_mb = exe_path.stat().st_size / (1024 ** 2)
+            print(f"  Tamanho    : {tam_mb:.1f} MB")
 
-    def exibir_falha(self):
-        """Exibe mensagem de falha"""
-        print("\n" + "="*70)
-        print("  ❌ BUILD FALHOU!")
-        print("="*70)
-        print("\n🔧 Troubleshooting:")
-        print("\n1. Verificar compilador C++:")
-        if self.sistema == 'Windows':
-            print("   Nuitka deve baixar MinGW64 automaticamente")
-            print("   Se falhar, baixe manualmente de: https://nuitka.net/doc/user-manual.html")
-        elif self.sistema == 'Linux':
-            print("   sudo apt install build-essential")
-        elif self.sistema == 'Darwin':
-            print("   xcode-select --install")
-        
-        print("\n2. Verificar memória RAM:")
-        print("   Build requer ~2GB livres")
-        
-        print("\n3. Tentar modo standalone (mais rápido):")
-        print("   python build.py --standalone")
-        
-        print("\n4. Verificar logs acima para erros específicos")
-        print("")
+        print(f"  Tempo      : {duracao}\n")
+        print("Próximos passos:")
+        print("  1. Teste o executável gerado")
+        print("  2. Valide em uma máquina sem Python instalado")
+        print("  3. Publique em GitHub Releases\n")
 
-    def build(self, modo: str = 'onefile', limpar: bool = True, confirmar: bool = True):
+    def _exibir_falha(self):
+        print(f"\n{'='*65}")
+        print("  ✗ BUILD FALHOU")
+        print(f"{'='*65}")
+        print("\nVerifique os erros acima e tente:")
+        print("  pip install --upgrade pyinstaller")
+        print("  pip install -r requirements.txt")
+        print("  python build.py --onedir   # modo alternativo, mais rápido\n")
+
+    # ------------------------------------------------------------------ #
+    #  Ponto de entrada                                                    #
+    # ------------------------------------------------------------------ #
+
+    def build(
+        self,
+        modo: str = "onefile",
+        windowed: bool = False,
+        limpar: bool = True,
+        confirmar: bool = True,
+    ) -> int:
         """
-        Método principal de build
-        
+        Método principal.
+
         Args:
-            modo: 'onefile' ou 'standalone'
-            limpar: Se deve limpar builds anteriores
-            confirmar: Se deve pedir confirmação do usuário
+            modo: ``'onefile'`` ou ``'onedir'``.
+            windowed: Ocultar janela de console (quebra o modo CLI).
+            limpar: Remover builds anteriores antes de compilar.
+            confirmar: Solicitar confirmação interativa antes de iniciar.
+
+        Returns:
+            Código de saída (0 = sucesso, 1 = falha/cancelado).
         """
-        print("="*70)
-        print("  NUITKA BUILD SYSTEM - SCalc")
-        print("="*70)
-        
-        # Verificações
-        if not self.verificar_nuitka():
+        if not self.verificar_pyinstaller():
             return 1
-        
-        if not self.verificar_compilador():
-            print("\n⚠️  Compilador não encontrado, mas continuando...")
-            print("   (Nuitka tentará resolver automaticamente)\n")
-        
-        # Limpar builds anteriores
+
         if limpar:
             self.limpar_builds_anteriores()
-        
-        # Exibir informações
-        self.exibir_info_build(modo)
-        
-        # Confirmar
-        if confirmar and not self.confirmar_build():
-            print("\n❌ Build cancelado pelo usuário\n")
-            return 1
-        
-        # Executar build
-        return self.executar_build(modo)
-    
 
-def main():
-    """Função principal"""
+        self.exibir_info(modo, windowed)
+
+        if confirmar:
+            resp = input("Continuar? (Y/N): ").strip().lower()
+            if resp != "y":
+                print("\n✗ Build cancelado.\n")
+                return 1
+
+        return self.executar_build(modo, windowed)
+
+
+# ---------------------------------------------------------------------- #
+#  CLI                                                                     #
+# ---------------------------------------------------------------------- #
+
+def main() -> int:
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='Build SCalc com Nuitka',
+        description="Build SCalc com PyInstaller",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog='''
+        epilog="""
 Exemplos:
-
-  # Build padrão (onefile):
-  python build.py
-  
-  # Build standalone (mais rápido de iniciar):
-  python build.py --standalone
-  
-  # Sem confirmação (para CI/CD):
-  python build.py --yes
-  
-  # Sem limpar builds anteriores:
-  python build.py --no-clean
-        '''
+  python build.py                   # build padrão (onefile, com confirmação)
+  python build.py --onedir          # empacota como pasta (inicia mais rápido)
+  python build.py --windowed        # oculta console (somente GUI, quebra CLI)
+  python build.py -y                # sem confirmação (CI/CD)
+  python build.py --no-clean -y     # sem limpar + sem confirmação
+""",
     )
 
     parser.add_argument(
-        '--standalone',
-        action='store_true',
-        help='Build em modo standalone (múltiplos arquivos, inicia mais rápido)'
+        "--onedir",
+        action="store_true",
+        help="Empacotar como diretório em vez de arquivo único",
     )
-
     parser.add_argument(
-        '--yes', '-y',
-        action='store_true',
-        help='Não pedir confirmação (útil para scripts automatizados)'
+        "--windowed",
+        action="store_true",
+        help="Ocultar janela de console no Windows/macOS (ATENÇÃO: desabilita CLI)",
     )
-
     parser.add_argument(
-        '--no-clean',
-        action='store_true',
-        help='Não limpar builds anteriores'
+        "-y", "--yes",
+        action="store_true",
+        help="Pular confirmação interativa (útil em pipelines CI/CD)",
+    )
+    parser.add_argument(
+        "--no-clean",
+        action="store_true",
+        help="Não remover builds anteriores",
     )
 
     args = parser.parse_args()
 
-    # Determinar modo
-    modo = 'standalone' if args.standalone else 'onefile'
-
-    # Criar builder e executar
-    builder = NuitkaBuilder()
+    builder = PyInstallerBuilder()
     return builder.build(
-        modo=modo,
+        modo="onedir" if args.onedir else "onefile",
+        windowed=args.windowed,
         limpar=not args.no_clean,
-        confirmar=not args.yes
+        confirmar=not args.yes,
     )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())
