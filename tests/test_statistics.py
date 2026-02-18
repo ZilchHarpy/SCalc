@@ -5,7 +5,7 @@ Testes para o modulo de Estatistica
 import unittest
 import pandas as pd
 import numpy as np
-from src.core import Calcular_Estatisticas, Particionar
+from src.core import  calcular_estatisticas, particionar
 
 
 class TestStatistics(unittest.TestCase):
@@ -27,7 +27,7 @@ class TestStatistics(unittest.TestCase):
     
     def test_particionar(self):
         """Testa a funcao Particionar"""
-        dados_brutos, erros = Particionar(self.df)
+        dados_brutos, erros = particionar(self.df)
         
         # Verificar se as chaves esperadas estao presentes
         self.assertIn('x1', dados_brutos)
@@ -37,7 +37,7 @@ class TestStatistics(unittest.TestCase):
     
     def test_calcular_estatisticas(self):
         """Testa a funcao Calcular_Estatisticas"""
-        medias, erros_est, erros_totais = Calcular_Estatisticas(self.df)
+        medias, erros_est, erros_totais = calcular_estatisticas(self.df)
         
         # Verificar se as variaveis foram calculadas
         self.assertIn('x', medias)
