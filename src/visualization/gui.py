@@ -21,6 +21,7 @@ from PySide6.QtGui import QFont
 
 # Importar funcoes utilitarias da nova estrutura
 from src.core import calcular_estatisticas, RegLin
+from src.core.statistics import particionar
 
 
 class MplCanvas(FigureCanvas):
@@ -42,8 +43,10 @@ class InterfaceRegressaoLinear(QMainWindow):
         
         # Variaveis de dados
         self.dados_excel = None
+        self.dados_brutos = {}
         self.medias = {}
         self.err_est = {}
+        self.err_total = {}
         self.err_instr = {}
         self.data_x = None
         self.data_y = None
@@ -100,11 +103,11 @@ class InterfaceRegressaoLinear(QMainWindow):
         layout_eixos = QVBoxLayout()
         
         layout_eixos.addWidget(QLabel("Eixo X (label):"))
-        self.entrada_x = QLineEdit("log(t) [s]")
+        self.entrada_x = QLineEdit("x")
         layout_eixos.addWidget(self.entrada_x)
         
         layout_eixos.addWidget(QLabel("Eixo Y (label):"))
-        self.entrada_y = QLineEdit("log(d) [mm]")
+        self.entrada_y = QLineEdit("y")
         layout_eixos.addWidget(self.entrada_y)
         
         layout_eixos.addWidget(QLabel("Titulo do Grafico:"))
@@ -293,30 +296,34 @@ class InterfaceRegressaoLinear(QMainWindow):
             return
         
         try:
+            # Manter dados brutos para regressao linear
+            self.dados_brutos, self.err_instr, _ = particionar(self.dados_excel)
+            
             # Calcular estatisticas
             resultado_stats = calcular_estatisticas(self.dados_excel)
             
             # Extrair dados do DataFrame
             self.medias = dict(zip(resultado_stats['Dados'], resultado_stats['Media']))
             self.err_est = dict(zip(resultado_stats['Dados'], resultado_stats['S_err']))
-            self.err_instr = dict(zip(resultado_stats['Dados'], resultado_stats['T_err']))
+            # Armazenar também o erro total
+            self.err_total = dict(zip(resultado_stats['Dados'], resultado_stats['T_err']))
             
-            # Popular combos com as variaveis disponiveis
-            variaveis = list(self.medias.keys())
+            # Popular combos com os prefixos (variaveis reais: a, b, c)
+            prefixos = sorted(self.dados_brutos.keys())
             self.combo_var_x.clear()
             self.combo_var_y.clear()
-            self.combo_var_x.addItems(variaveis)
-            self.combo_var_y.addItems(variaveis)
+            self.combo_var_x.addItems(prefixos)
+            self.combo_var_y.addItems(prefixos)
             
-            # Selecionar padrao (se houver pelo menos 2 variaveis)
-            if len(variaveis) >= 2:
-                self.combo_var_x.setCurrentIndex(1)  # Segunda variavel para X
-                self.combo_var_y.setCurrentIndex(0)  # Primeira variavel para Y
+            # Selecionar padrao (se houver pelo menos 2 prefixos)
+            if len(prefixos) >= 2:
+                self.combo_var_x.setCurrentIndex(0)  # Primeiro prefixo para X
+                self.combo_var_y.setCurrentIndex(1)  # Segundo prefixo para Y
             
             # Mostrar estatisticas detalhadas
             self.mostrar_estatisticas_detalhadas()
             
-            self.texto_resultados.setText(f"✓ Estatisticas calculadas!\n\nVariaveis encontradas: {', '.join(variaveis)}\n\n⚠️ Selecione as variaveis X e Y e clique em 'Calcular Regressao Linear'.")
+            self.texto_resultados.setText(f"✓ Estatisticas calculadas!\n\nVariaveis encontradas: {', '.join(prefixos)}\n\n⚠️ Selecione as variaveis X e Y e clique em 'Calcular Regressao Linear'.")
             
             # Habilitar proximo botao
             self.btn_regressao.setEnabled(True)
@@ -327,45 +334,103 @@ class InterfaceRegressaoLinear(QMainWindow):
     
     def mostrar_estatisticas_detalhadas(self):
         """Mostra estatisticas detalhadas na tab correspondente"""
-        if not self.medias:
+        if not self.medias or not self.dados_brutos:
             return
         
         texto = "=" * 60 + "\n"
         texto += "ESTATISTICAS DETALHADAS\n"
         texto += "=" * 60 + "\n\n"
         
-        for var in self.medias.keys():
-            texto += f"Variavel: {var}\n"
+        # Agrupar por prefixo (variavel real: a, b, c)
+        for prefixo in sorted(self.dados_brutos.keys()):
+            texto += f"Variável: {prefixo}\n"
             texto += "-" * 40 + "\n"
-            texto += f"Medias: {self.medias[var]}\n"
-            if var in self.err_est:
-                texto += f"Erros Estatisticos: {self.err_est[var]}\n"
-            if var in self.err_instr:
-                texto += f"Erros Instrumentais: {self.err_instr[var]}\n"
+            
+            # Coletar todas as iteracoes desta variavel
+            iteracoes = sorted(self.dados_brutos[prefixo].keys())
+            
+            for chave in iteracoes:
+                valores = self.dados_brutos[prefixo][chave]
+                if valores:
+                    media = sum(valores) / len(valores)
+                    # Buscar o erro total para esta chave
+                    erro_total = self.err_total.get(chave, 0.0)
+                    
+                    texto += f"  {chave}: média = {media:.6f}, erro total = {erro_total:.6f}, n = {len(valores)}\n"
+            
             texto += "\n"
         
         self.texto_estatisticas.setText(texto)
     
     def calcular_regressao(self):
         """Calcula a regressao linear"""
-        if not self.medias:
+        if not self.medias or not self.dados_brutos:
             QMessageBox.warning(self, "Aviso", "Por favor, calcule as estatisticas primeiro!")
             return
         
         try:
-            # Obter variaveis selecionadas
-            var_x = self.combo_var_x.currentText()
-            var_y = self.combo_var_y.currentText()
+            # Obter prefixos (variaveis) selecionados
+            prefixo_x = self.combo_var_x.currentText()
+            prefixo_y = self.combo_var_y.currentText()
             
-            if not var_x or not var_y:
+            if not prefixo_x or not prefixo_y:
                 QMessageBox.warning(self, "Aviso", "Selecione as variaveis X e Y!")
                 return
             
-            # Preparar dados
-            self.data_x = np.array([self.medias[var_x]])
-            self.data_y = np.array([self.medias[var_y]])
-            self.data_x_err = np.array([self.err_est[var_x]])
-            self.data_y_err = np.array([self.err_est[var_y]])
+            if prefixo_x == prefixo_y:
+                QMessageBox.warning(self, "Aviso", "As variaveis X e Y devem ser diferentes!")
+                return
+            
+            # Validar se os prefixos existem nos dados brutos
+            if prefixo_x not in self.dados_brutos or prefixo_y not in self.dados_brutos:
+                QMessageBox.warning(self, "Aviso", "Uma ou ambas as variaveis nao foram encontradas nos dados!")
+                return
+            
+            # Calcular médias por iteração (a_1, a_2, a_3, etc)
+            x_values = []
+            y_values = []
+            x_errs = []
+            y_errs = []
+            
+            # Processar variável X
+            # Ordenar as chaves para manter consistência
+            chaves_x = sorted(self.dados_brutos[prefixo_x].keys())
+            
+            for chave in chaves_x:
+                valores = self.dados_brutos[prefixo_x][chave]
+                if valores:
+                    media = sum(valores) / len(valores)
+                    x_values.append(media)
+                    # Usar o erro total da iteração
+                    erro = self.err_total.get(chave, 0.0)
+                    x_errs.append(erro)
+            
+            # Processar variável Y
+            chaves_y = sorted(self.dados_brutos[prefixo_y].keys())
+            
+            for chave in chaves_y:
+                valores = self.dados_brutos[prefixo_y][chave]
+                if valores:
+                    media = sum(valores) / len(valores)
+                    y_values.append(media)
+                    # Usar o erro total da iteração
+                    erro = self.err_total.get(chave, 0.0)
+                    y_errs.append(erro)
+            
+            # Validar dados
+            if len(x_values) < 2 or len(y_values) < 2:
+                QMessageBox.warning(self, "Aviso", "Dados insuficientes para regressao linear (minimo 2 iteracoes por variavel)!")
+                return
+            
+            if len(x_values) != len(y_values):
+                QMessageBox.warning(self, "Aviso", f"As variaveis devem ter a mesma quantidade de iteracoes! X={len(x_values)}, Y={len(y_values)}")
+                return
+            
+            # Converter para arrays numpy
+            self.data_x = np.array(x_values)
+            self.data_y = np.array(y_values)
+            self.data_x_err = np.array(x_errs)
+            self.data_y_err = np.array(y_errs)
             
             # Calcular regressao
             self.slope, self.intercept, self.r_squared = RegLin(self.data_x.tolist(), self.data_y.tolist())
@@ -374,8 +439,9 @@ class InterfaceRegressaoLinear(QMainWindow):
             resultado = "=" * 60 + "\n"
             resultado += "REGRESSAO LINEAR CALCULADA\n"
             resultado += "=" * 60 + "\n\n"
-            resultado += f"Variavel X: {var_x}\n"
-            resultado += f"Variavel Y: {var_y}\n\n"
+            resultado += f"Variavel X: {prefixo_x}\n"
+            resultado += f"Variavel Y: {prefixo_y}\n"
+            resultado += f"Iteracoes: {len(self.data_x)}\n\n"
             resultado += f"Equacao: y = {self.slope:.6f}x + {self.intercept:.6f}\n\n"
             resultado += f"Coeficiente Angular (m): {self.slope:.6f}\n"
             resultado += f"Coeficiente Linear (b): {self.intercept:.6f}\n"
@@ -471,8 +537,10 @@ class InterfaceRegressaoLinear(QMainWindow):
         if resposta == QMessageBox.StandardButton.Yes:
             # Resetar variaveis
             self.dados_excel = None
+            self.dados_brutos = {}
             self.medias = {}
             self.err_est = {}
+            self.err_total = {}
             self.err_instr = {}
             self.data_x = None
             self.data_y = None

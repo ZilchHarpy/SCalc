@@ -6,7 +6,7 @@ e calcular parametros estatisticos da reta.
 """
 
 from scipy.stats import linregress
-from typing import Tuple, List
+from typing import Tuple, List, Any
 import numpy as np
 
 
@@ -31,16 +31,17 @@ def RegLin(x: List[float], y: List[float]) -> Tuple[float, float, float]:
     """
     
     # Converter listas para arrays numpy (melhora performance e compatibilidade)
-    x_array = np.array(x, dtype=float)
-    y_array = np.array(y, dtype=float)
+    x_array: Any = np.array(x, dtype=float)
+    y_array: Any = np.array(y, dtype=float)
     
     # Realizar regressao linear
-    reg_result = linregress(x_array, y_array)
+    # linregress retorna uma tupla: (slope, intercept, rvalue, pvalue, stderr)
+    reg_result: Any = linregress(x_array, y_array)
     
-    # Indices: [0]=slope, [1]=intercept, [2]=rvalue, [3]=pvalue, [4]=stderr
-    slope: float = float(reg_result[0])  # type: ignore
-    intercept: float = float(reg_result[1])  # type: ignore
-    r_value: float = float(reg_result[2])  # type: ignore
+    # Extrair valores usando indexacao (mais robusto para Pylance)
+    slope: float = float(reg_result[0])      # Coeficiente angular
+    intercept: float = float(reg_result[1])  # Coeficiente linear
+    r_value: float = float(reg_result[2])    # Coeficiente de correlacao
     
     # Calcular R2 (coeficiente de determinacao)
     r_squared: float = r_value * r_value
