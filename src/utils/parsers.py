@@ -5,7 +5,22 @@ Modulo de parsing e extracao de informacoes de nomes de colunas em DataFrames.
 import re
 from typing import Optional
 
-def extrair_prefixo(nome_coluna) -> Optional[str]:
+def contar(prefixo, lista):
+    """
+    Conta quantos itens em uma lista comecam com um prefixo especifico
+
+    Args:
+        prefixo (str): Prefixo a procurar
+        lista (list[str]): Lista de string a analisar
+    """
+    return sum(1 for item in lista if (
+                                        item.startswith(prefixo + "_") or
+                                        item.startswith(prefixo + " ") or
+                                        item.startswith(prefixo + "-") or
+                                        item.startswith(prefixo + "\n") or
+                                        item.startswith(prefixo + "")))
+
+def extrair_prefixo(nome) -> Optional[str]:
     """
     Extrai o prefixo alfabetico de uma coluna (ex: 'x1' -> 'x'; 'temp2' -> 'temp)
 
@@ -25,10 +40,10 @@ def extrair_prefixo(nome_coluna) -> Optional[str]:
         >>> extrair_prefixo('123')
         None
     """
-    if not isinstance(nome_coluna, str):
+    if not isinstance(nome, str):
         return None
     
-    match = re.match(r'^([a-zA-Z]+)', nome_coluna.strip())
+    match = re.match(r'^([a-zA-Z]+)', nome.strip())
     return match.group(1) if match else None
 
 def eh_erro_instrumental(nome_coluna) -> bool:
@@ -42,11 +57,11 @@ def eh_erro_instrumental(nome_coluna) -> bool:
         bool: True se for coluna de erro instrumental, False caso contrario
 
     Examples:
-        >>> eh_erro('i_err')
+        >>> eh_erro_instrumental('i_err')
         True
-        >>> eh_erro('I_Err')
+        >>> eh_erro_instrumental('I_Err')
         True
-        >>> eh_erro('y1')
+        >>> eh_erro_instrumental('y1')
         False
     """
     if not isinstance(nome_coluna, str):
