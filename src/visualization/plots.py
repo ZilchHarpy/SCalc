@@ -15,9 +15,9 @@ def PlotarGrafico(
     erros_x: List[float],
     erros_y: List[float],
     str_x: str,
+    str_y: str,
     slope: float,
     intercept: float,
-    str_y: str,
     titulo: str
 ) -> None:
     """
@@ -28,9 +28,9 @@ def PlotarGrafico(
         erros_x: Lista de erros para o eixo X
         erros_y: Lista de erros para o eixo Y
         str_x: Label do eixo X
+        str_y: Label do eixo Y
         slope: Coeficiente angular da reta de regressao
         intercept: Coeficiente linear da reta de regressao
-        str_y: Label do eixo Y
         titulo: Titulo do grafico
         
     Returns:

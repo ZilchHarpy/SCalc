@@ -35,10 +35,8 @@ def RegLin(x: List[float], y: List[float]) -> Tuple[float, float, float]:
     y_array = np.array(y, dtype=float)
     
     # Realizar regressao linear
-    # linregress retorna: LinregressResult ou tupla (slope, intercept, rvalue, pvalue, stderr)
     reg_result = linregress(x_array, y_array)
     
-    # Acessar valores por indice
     # Indices: [0]=slope, [1]=intercept, [2]=rvalue, [3]=pvalue, [4]=stderr
     slope: float = float(reg_result[0])  # type: ignore
     intercept: float = float(reg_result[1])  # type: ignore

@@ -80,14 +80,63 @@ def modo_cli(path: str, ax_x: str = "log(t) [s]", ax_y: str = "log(d) [mm]",
         
         # Preparacao dos dados para regressao linear
         logger.info("Preparando dados para regressao linear...")
-        dados_keys = list(medias.keys())
-        x = np.array([medias[dados_keys[0]]])
-        y = np.array([medias[dados_keys[1]]])
-        x_err = np.array([err_est[dados_keys[0]]])
-        y_err = np.array([err_est[dados_keys[1]]])
+        
+        # Reorganizar dados por iteracao (1, 2, 3) para cada grupo (a, b, c)
+        # Estrutura esperada: {'a': {'a_1': media, 'a_2': media, ...}, 'b': {...}, ...}
+        dados_por_iteracao = {}
+        
+        for dado, media in medias.items():
+            # Extrair prefixo (a, b, c) e numero (1, 2, 3)
+            partes = dado.rsplit('_', 1)
+            if len(partes) == 2:
+                prefixo, numero = partes
+                if numero not in dados_por_iteracao:
+                    dados_por_iteracao[numero] = {}
+                dados_por_iteracao[numero][prefixo] = {
+                    'media': media,
+                    'err_est': err_est[dado],
+                    'err_total': err_total[dado]
+                }
+        
+        # Obter lista de grupos (prefixos) e iteracoes
+        grupos = sorted(set(prefixo for iterar in dados_por_iteracao.values() for prefixo in iterar.keys()))
+        iteracoes = sorted(dados_por_iteracao.keys())
+        
+        logger.info(f"Grupos encontrados: {grupos}")
+        logger.info(f"Iteracoes encontradas: {iteracoes}")
+        
+        if len(grupos) < 2:
+            raise DadosInvalidosException("Minimo de 2 grupos necessario para regressao linear")
+        
+        if len(iteracoes) < 2:
+            raise DadosInvalidosException("Minimo de 2 iteracoes necessario para regressao linear")
+        
+        # Fazer regressao entre primeiro e segundo grupo usando iteracoes como pontos
+        grupo_x = grupos[0]
+        grupo_y = grupos[1]
+        
+        x = []
+        y = []
+        x_err = []
+        y_err = []
+        
+        for iteracao in iteracoes:
+            if grupo_x in dados_por_iteracao[iteracao] and grupo_y in dados_por_iteracao[iteracao]:
+                x.append(dados_por_iteracao[iteracao][grupo_x]['media'])
+                y.append(dados_por_iteracao[iteracao][grupo_y]['media'])
+                x_err.append(dados_por_iteracao[iteracao][grupo_x]['err_est'])
+                y_err.append(dados_por_iteracao[iteracao][grupo_y]['err_est'])
+        
+        if len(x) < 2:
+            raise DadosInvalidosException("Dados insuficientes para regressao linear")
+        
+        x = np.array(x)
+        y = np.array(y)
+        x_err = np.array(x_err)
+        y_err = np.array(y_err)
         
         # Realiza a regressao linear
-        logger.info("Calculando regressao linear...")
+        logger.info(f"Calculando regressao linear entre grupos '{grupo_x}' e '{grupo_y}'...")
         try:
             slope, intercept, r_squared = RegLin(x.tolist(), y.tolist())
         except Exception as e:
