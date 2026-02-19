@@ -5,14 +5,6 @@ Funcoes testadas:
     extrair_prefixo(nome)       -> str | None
     eh_erro_instrumental(nome)  -> bool
     contar(prefixo, lista)      -> int
-
-AVISO — falso positivo conhecido em eh_erro_instrumental():
-    A funcao classifica uma coluna como erro instrumental quando o nome contem
-    simultaneamente um indicador de erro ("err"/"error"/"erro") E a letra "i"
-    em qualquer posicao (nao como token isolado). Isso causa falsos positivos
-    em nomes como "distancia_err" ou "medicao_error", pois ambos contem a
-    letra 'i' na parte descritiva do nome. O teste test_falso_positivo_letra_i
-    documenta esse comportamento para rastrear futuras correcoes.
 """
 
 import unittest
@@ -26,40 +18,38 @@ from src.utils.parsers import extrair_prefixo, eh_erro_instrumental, contar
 class TestExtrairPrefixo(unittest.TestCase):
     """Testes para extrair_prefixo()."""
 
-    def test_prefixo_letra_unica(self):
-        """Uma letra seguida de numero deve retornar a letra."""
+    def test_letra_unica(self):
         self.assertEqual(extrair_prefixo('x1'), 'x')
         self.assertEqual(extrair_prefixo('y2'), 'y')
         self.assertEqual(extrair_prefixo('z9'), 'z')
 
-    def test_prefixo_multiplas_letras(self):
-        """Multiplas letras seguidas de numero devem retornar todas as letras."""
+    def test_multiplas_letras(self):
         self.assertEqual(extrair_prefixo('temp3'),        'temp')
         self.assertEqual(extrair_prefixo('temperatura1'), 'temperatura')
         self.assertEqual(extrair_prefixo('pressao2'),     'pressao')
 
-    def test_prefixo_com_underscore(self):
-        """Formato 'prefixo_n' deve retornar apenas o prefixo alfabetico."""
+    def test_formato_prefixo_underscore(self):
+        """Formato canonico do SCalc: prefixo_n."""
         self.assertEqual(extrair_prefixo('a_1'),    'a')
         self.assertEqual(extrair_prefixo('temp_2'), 'temp')
+        self.assertEqual(extrair_prefixo('b_10'),   'b')
 
     def test_apenas_letras_sem_numero(self):
-        """String somente com letras deve retornar a string completa."""
+        """String so com letras retorna a string completa."""
         self.assertEqual(extrair_prefixo('abc'), 'abc')
 
     def test_entradas_invalidas_retornam_none(self):
-        """Entradas sem prefixo alfabetico valido devem retornar None."""
         self.assertIsNone(extrair_prefixo('123'))
         self.assertIsNone(extrair_prefixo(''))
         self.assertIsNone(extrair_prefixo(None))
+        self.assertIsNone(extrair_prefixo(42))
 
-    def test_espacos_no_inicio_sao_ignorados(self):
-        """Espacos iniciais devem ser ignorados (strip interno)."""
+    def test_espacos_iniciais_ignorados(self):
+        """strip() interno deve ignorar espacos no inicio."""
         self.assertEqual(extrair_prefixo('  x1'), 'x')
 
     def test_maiusculas_preservadas(self):
-        """O prefixo deve preservar o case original."""
-        self.assertEqual(extrair_prefixo('Temp1'), 'Temp')
+        self.assertEqual(extrair_prefixo('Temp1'),    'Temp')
         self.assertEqual(extrair_prefixo('PRESSAO2'), 'PRESSAO')
 
 
@@ -68,85 +58,89 @@ class TestExtrairPrefixo(unittest.TestCase):
 # --------------------------------------------------------------------------- #
 
 class TestEhErroInstrumental(unittest.TestCase):
-    """Testes para eh_erro_instrumental()."""
+    """
+    Testes para eh_erro_instrumental().
 
-    # -- casos verdadeiros -------------------------------------------------- #
+    Logica de deteccao (ambas as condicoes devem ser verdadeiras):
+      - Indicador de ERRO por substring: 'err', 'error' ou 'erro' em qualquer
+        posicao do nome (captura 'xerr', 'ierr', etc.).
+      - Indicador de INSTRUMENTAL por token exato apos split em _-\\s:
+        'i', 'instr', 'ins', 'instrumental' ou 'instrument'.
+        Token exato evita falso positivo pela letra 'i' embutida em palavras
+        como 'distancia' ou 'medicao'.
+    """
 
-    def test_formatos_tipicos_do_modelo(self):
-        """Formatos usados no modelo de tabela do SCalc devem retornar True."""
+    # -- verdadeiros -------------------------------------------------------- #
+
+    def test_formatos_canonicos_do_modelo(self):
+        """Formatos usados na tabela padrao do SCalc."""
         self.assertTrue(eh_erro_instrumental('I_err'))
         self.assertTrue(eh_erro_instrumental('xerr_instr'))
         self.assertTrue(eh_erro_instrumental('yerr_instr'))
 
-    def test_insensibilidade_a_maiusculas(self):
-        """A deteccao deve ser insensivel a maiusculas."""
+    def test_case_insensitive(self):
         self.assertTrue(eh_erro_instrumental('I_ERR'))
         self.assertTrue(eh_erro_instrumental('XERR_INSTR'))
         self.assertTrue(eh_erro_instrumental('i_Err'))
 
     def test_variantes_de_error(self):
-        """Variacoes de 'err': 'error' e 'erro' tambem devem ser detectadas."""
         self.assertTrue(eh_erro_instrumental('i_error'))
         self.assertTrue(eh_erro_instrumental('i_erro'))
 
     def test_variantes_de_instrumental(self):
-        """Variacoes de 'i': 'instr', 'ins', 'instrumental' devem ser detectadas."""
         self.assertTrue(eh_erro_instrumental('instr_err'))
         self.assertTrue(eh_erro_instrumental('ins_error'))
         self.assertTrue(eh_erro_instrumental('instrumental_err'))
+        self.assertTrue(eh_erro_instrumental('instrument_err'))
 
-    # -- casos falsos -------------------------------------------------------- #
+    def test_i_como_token_isolado(self):
+        """'i' sozinho como token (entre separadores) deve ser reconhecido."""
+        self.assertTrue(eh_erro_instrumental('i_err'))
+        self.assertTrue(eh_erro_instrumental('err_i'))
+        self.assertTrue(eh_erro_instrumental('x_i_err'))
+
+    # -- falsos ------------------------------------------------------------- #
 
     def test_dados_normais_retornam_false(self):
-        """Colunas de dados comuns nao devem ser classificadas como erro."""
         self.assertFalse(eh_erro_instrumental('x1'))
         self.assertFalse(eh_erro_instrumental('y2'))
-        self.assertFalse(eh_erro_instrumental('temperatura3'))
-        self.assertFalse(eh_erro_instrumental('1'))
         self.assertFalse(eh_erro_instrumental('Dados'))
+        self.assertFalse(eh_erro_instrumental('1'))
+        self.assertFalse(eh_erro_instrumental('temperatura3'))
 
     def test_erro_sem_indicador_instrumental(self):
-        """Coluna com 'err' mas sem indicador de instrumental deve retornar False."""
-        # 'erro' presente, mas sem 'i', 'instr', etc. em nenhuma posicao
-        # 'erro' nao contem 'i' -> False
+        """Contem 'err' mas nenhum token instrumental -> False."""
         self.assertFalse(eh_erro_instrumental('erro'))
         self.assertFalse(eh_erro_instrumental('error'))
+        self.assertFalse(eh_erro_instrumental('x_err'))     # 'x' nao e token instr
+        self.assertFalse(eh_erro_instrumental('y_error'))   # 'y' nao e token instr
+        self.assertFalse(eh_erro_instrumental('val_err'))   # 'val' nao e token instr
 
-    def test_entradas_invalidas_retornam_false(self):
-        """Entradas nao-string devem retornar False sem lancar excecao."""
+    def test_sem_indicador_de_erro(self):
+        """Contem token instrumental mas sem 'err' -> False."""
+        self.assertFalse(eh_erro_instrumental('i_valor'))
+        self.assertFalse(eh_erro_instrumental('instr_dado'))
+
+    def test_entradas_invalidas(self):
         self.assertFalse(eh_erro_instrumental(''))
         self.assertFalse(eh_erro_instrumental(None))
         self.assertFalse(eh_erro_instrumental(42))
 
-    # -- falso positivo documentado ----------------------------------------- #
+    # -- bug corrigido: falso positivo por letra 'i' embutida em palavras -- #
 
-    def test_falso_positivo_letra_i(self):
+    def test_letra_i_embutida_em_palavra_nao_e_token(self):
         """
-        COMPORTAMENTO CONHECIDO — nao e um teste de corretude, mas de regressao.
+        Antes da correcao, nomes como 'distancia_err' retornavam True porque
+        'i' aparecia em qualquer posicao da string. Apos a correcao, apenas
+        'i' como token isolado (entre separadores) e reconhecido.
 
-        Colunas como 'distancia_err' e 'medicao_error' contem a letra 'i'
-        na parte descritiva do nome e por isso sao incorretamente classificadas
-        como erros instrumentais. Este teste documenta o comportamento atual
-        para que qualquer correcao futura seja detectada.
-
-        Se este teste comecar a FALHAR, significa que o bug foi corrigido —
-        o que e desejavel. Atualize-o para refletir o comportamento correto.
+        Estes casos DEVEM retornar False.
         """
-        # Estes deveriam ser False, mas retornam True pelo bug descrito acima.
-        resultado_distancia = eh_erro_instrumental('distancia_err')
-        resultado_medicao   = eh_erro_instrumental('medicao_error')
-
-        # Documentar que o falso positivo existe:
-        self.assertTrue(
-            resultado_distancia,
-            "Se chegou aqui, o falso positivo de 'distancia_err' foi corrigido. "
-            "Atualize este teste para assertFalse."
-        )
-        self.assertTrue(
-            resultado_medicao,
-            "Se chegou aqui, o falso positivo de 'medicao_error' foi corrigido. "
-            "Atualize este teste para assertFalse."
-        )
+        self.assertFalse(eh_erro_instrumental('distancia_err'))
+        self.assertFalse(eh_erro_instrumental('medicao_error'))
+        self.assertFalse(eh_erro_instrumental('via_err'))
+        self.assertFalse(eh_erro_instrumental('fisica_erro'))
+        self.assertFalse(eh_erro_instrumental('posicao_err'))
 
 
 # --------------------------------------------------------------------------- #
@@ -160,29 +154,37 @@ class TestContar(unittest.TestCase):
         self.lista = ['a_1', 'a_2', 'a_3', 'b_1', 'b_2', 'temperatura_1']
 
     def test_conta_prefixo_simples(self):
-        """Deve contar apenas os itens que comecam com o prefixo dado."""
         self.assertEqual(contar('a', self.lista), 3)
         self.assertEqual(contar('b', self.lista), 2)
 
     def test_conta_prefixo_multiplas_letras(self):
-        """Prefixos com mais de uma letra devem funcionar corretamente."""
         self.assertEqual(contar('temperatura', self.lista), 1)
 
     def test_prefixo_ausente_retorna_zero(self):
-        """Prefixo que nao existe na lista deve retornar 0."""
         self.assertEqual(contar('z', self.lista), 0)
 
-    def test_nao_conta_substring_parcial(self):
+    def test_nao_conta_substring_de_nome_maior(self):
         """
-        'a' nao deve contar 'temperatura_1' mesmo contendo a letra 'a',
-        pois o separador (_, espaco, -) ou fim de string e exigido.
+        Bug corrigido: 'temp' nao deve contar 'temperatura_1' mesmo que
+        'temperatura' comece com 'temp'. O separador e obrigatorio.
         """
-        # 'temperatura_1'.startswith('a_') -> False -> nao deve ser contado
-        self.assertEqual(contar('a', ['temperatura_1', 'a_1']), 1)
+        self.assertEqual(contar('temp',  ['temperatura_1', 'temp_1']), 1)
+        self.assertEqual(contar('a',     ['temperatura_1', 'a_1']),    1)
+        self.assertEqual(contar('pre',   ['pressao_1', 'pre_1']),      1)
 
-    def test_lista_vazia_retorna_zero(self):
-        """Lista vazia deve sempre retornar 0."""
+    def test_separadores_reconhecidos(self):
+        """Aceita _ espaco - e newline como separadores."""
+        lista = ['a_1', 'a 2', 'a-3', 'a\n4', 'ab_1']
+        self.assertEqual(contar('a', lista), 4)   # 'ab_1' nao conta
+
+    def test_lista_vazia(self):
         self.assertEqual(contar('a', []), 0)
+
+    def test_prefixo_vazio_nao_conta_nada(self):
+        """Prefixo vazio com separador sempre e string vazia+sep, nao deve
+        contar items normais."""
+        # '' + '_' = '_'; nenhum item comeca com '_'
+        self.assertEqual(contar('', ['a_1', 'b_2']), 0)
 
 
 # --------------------------------------------------------------------------- #

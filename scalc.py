@@ -1,12 +1,12 @@
 """
 SCalc - Sistema de Calculo e Analise de Regressao Linear
 
-Este modulo pode ser executado de duas formas:
-1. Modo CLI (linha de comando) - para processamento direto de arquivos
-2. Modo GUI (interface grafica) - para uso interativo
+Pode ser executado de duas formas:
+  python scalc.py              # Modo GUI (padrao)
+  python scalc.py --gui        # Modo GUI (explicito)
+  python scalc.py --cli -f <arquivo.xlsx>  # Modo CLI
 
-Autor: [Seu Nome]
-Data: 2025
+Autor: Caio Aquilino Merino
 """
 
 import sys
@@ -14,293 +14,231 @@ import argparse
 import logging
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from src.data.config import Config, setup_logging
-from src.core import calcular_estatisticas, RegLin
+from src.core import calcular_estatisticas, calcular_stats_prefixo, RegLin
 from src.core.statistics import particionar
-from src.visualization.plots import PlotarGrafico
-from src.utils import ValidadorDados
 from src.core.exceptions import (
     DadosInvalidosException,
     ArquivoInvalidoException,
-    RegressaoException
+    RegressaoException,
 )
+from src.utils.validador import ValidadorDados   # importado direto para evitar circular import
+from src.visualization.plots import PlotarGrafico
 
-# Configurar logger
 logger = logging.getLogger(__name__)
 
 
-def modo_cli(path: str, ax_x: str = "x", ax_y: str = "y", 
-             titulo: str = "Grafico de Dispersao com Regressao Linear"):
+# --------------------------------------------------------------------------- #
+#  Modo CLI                                                                    #
+# --------------------------------------------------------------------------- #
+
+def modo_cli(
+    path: str,
+    ax_x: str = "x",
+    ax_y: str = "y",
+    titulo: str = "Grafico de Dispersao com Regressao Linear",
+) -> None:
     """
-    Executa o programa em modo linha de comando (CLI)
-    
+    Executa o programa em modo linha de comando.
+
+    Carrega o arquivo Excel, executa o pipeline completo (particionar ->
+    calcular_stats_prefixo -> RegLin -> PlotarGrafico) e imprime os
+    resultados no terminal via logger.
+
     Args:
-        path: Caminho para o arquivo Excel
-        ax_x: Label do eixo X
-        ax_y: Label do eixo Y
-        titulo: Titulo do grafico
+        path:   Caminho para o arquivo Excel.
+        ax_x:   Rotulo do eixo X no grafico.
+        ax_y:   Rotulo do eixo Y no grafico.
+        titulo: Titulo do grafico.
     """
-    logger.info("="*60)
+    logger.info("=" * 60)
     logger.info("SCalc - Modo Linha de Comando")
-    logger.info("="*60)
-    
+    logger.info("=" * 60)
+
     try:
-        # Validar arquivo
+        # ---------------------------------------------------------------- #
+        #  Carregar e validar                                               #
+        # ---------------------------------------------------------------- #
         logger.info(f"Validando arquivo: {path}")
         ValidadorDados.validar_arquivo_excel(path)
-        
-        # Leitura dos dados do arquivo Excel
+
         logger.info(f"Carregando arquivo: {path}")
         dados_excel = pd.read_excel(path)
-        
-        # Validar DataFrame
-        logger.info(f"Validando DataFrame")
+
         ValidadorDados.validar_dataframe(dados_excel, "Dados do Excel")
         ValidadorDados.validar_tamanho_arquivo(dados_excel)
-        
-        logger.info(f"Arquivo carregado com sucesso: {len(dados_excel)} linhas, {len(dados_excel.columns)} colunas")
-        
-        # Obter dados brutos usando particionar
+        logger.info(
+            f"Arquivo carregado: {len(dados_excel)} linhas, "
+            f"{len(dados_excel.columns)} colunas"
+        )
+
+        # ---------------------------------------------------------------- #
+        #  Particionar                                                       #
+        # ---------------------------------------------------------------- #
         logger.info("Particionando dados...")
-        dados_brutos, erros_instr, dados_keys = particionar(dados_excel)
-        
-        # Obter prefixos (grupos)
+        dados_brutos, erros_instr, _ = particionar(dados_excel)
+
         prefixos = sorted(dados_brutos.keys())
-        
-        logger.info(f"Prefixos encontrados: {prefixos}")
-        
+        logger.info(f"Grupos encontrados: {prefixos}")
+
         if len(prefixos) < 2:
-            raise DadosInvalidosException("Minimo de 2 grupos (prefixos) necessario para regressao linear")
-        
-        # Usar os dois primeiros prefixos para regressao
-        prefixo_x = prefixos[0]
-        prefixo_y = prefixos[1]
-        
-        logger.info(f"Realizando regressao linear entre '{prefixo_x}' (X) e '{prefixo_y}' (Y)...")
-        
-        # Calcular médias por iteração (a_1, a_2, a_3, etc)
-        x = []
-        y = []
-        x_err = []
-        y_err = []
-        
-        # Processar variável X - calcular média de cada iteração
-        chaves_x = sorted(dados_brutos[prefixo_x].keys())
-        for chave in chaves_x:
-            valores = dados_brutos[prefixo_x][chave]
-            if valores:
-                media = sum(valores) / len(valores)
-                x.append(media)
-                
-                # Calcular erro estatístico
-                if len(valores) > 1:
-                    desvio = (sum([(v - media) ** 2 for v in valores]) / (len(valores) - 1)) ** 0.5
-                    erro_est = desvio / (len(valores) ** 0.5)
-                else:
-                    erro_est = 0.0
-                
-                # Obter erro instrumental
-                erro_inst = erros_instr[prefixo_x][chave]
-                
-                # Calcular erro total
-                erro_total = (erro_est ** 2 + erro_inst ** 2) ** 0.5
-                x_err.append(erro_total)
-        
-        # Processar variável Y - calcular média de cada iteração
-        chaves_y = sorted(dados_brutos[prefixo_y].keys())
-        for chave in chaves_y:
-            valores = dados_brutos[prefixo_y][chave]
-            if valores:
-                media = sum(valores) / len(valores)
-                y.append(media)
-                
-                # Calcular erro estatístico
-                if len(valores) > 1:
-                    desvio = (sum([(v - media) ** 2 for v in valores]) / (len(valores) - 1)) ** 0.5
-                    erro_est = desvio / (len(valores) ** 0.5)
-                else:
-                    erro_est = 0.0
-                
-                # Obter erro instrumental
-                erro_inst = erros_instr[prefixo_y][chave]
-                
-                # Calcular erro total
-                erro_total = (erro_est ** 2 + erro_inst ** 2) ** 0.5
-                y_err.append(erro_total)
-        
-        # Validar dados suficientes
-        if len(x) < 2 or len(y) < 2:
-            raise DadosInvalidosException("Dados insuficientes para regressao linear (minimo 2 iteracoes por grupo)")
-        
-        if len(x) != len(y):
-            raise DadosInvalidosException(f"Grupos com tamanhos diferentes: {prefixo_x}={len(x)}, {prefixo_y}={len(y)}")
-        
-        x = np.array(x)
-        y = np.array(y)
-        x_err = np.array(x_err)
-        y_err = np.array(y_err)
-        
-        # Realiza a regressao linear
+            raise DadosInvalidosException(
+                "Minimo de 2 grupos necessario para regressao linear"
+            )
+
+        prefixo_x, prefixo_y = prefixos[0], prefixos[1]
+        logger.info(
+            f"Regressao: '{prefixo_x}' (X) vs '{prefixo_y}' (Y)"
+        )
+
+        # ---------------------------------------------------------------- #
+        #  Calcular medias e erros via helper centralizado                  #
+        # ---------------------------------------------------------------- #
+        x_vals, x_errs = calcular_stats_prefixo(
+            dados_brutos[prefixo_x], erros_instr[prefixo_x]
+        )
+        y_vals, y_errs = calcular_stats_prefixo(
+            dados_brutos[prefixo_y], erros_instr[prefixo_y]
+        )
+
+        if len(x_vals) < 2 or len(y_vals) < 2:
+            raise DadosInvalidosException(
+                "Dados insuficientes para regressao linear "
+                "(minimo 2 pontos por grupo)"
+            )
+        if len(x_vals) != len(y_vals):
+            raise DadosInvalidosException(
+                f"Grupos com tamanhos diferentes: "
+                f"{prefixo_x}={len(x_vals)}, {prefixo_y}={len(y_vals)}"
+            )
+
+        x = np.array(x_vals)
+        y = np.array(y_vals)
+        x_err = np.array(x_errs)
+        y_err = np.array(y_errs)
+
+        # ---------------------------------------------------------------- #
+        #  Regressao linear                                                 #
+        # ---------------------------------------------------------------- #
         logger.info("Calculando regressao linear...")
         try:
             slope, intercept, r_squared = RegLin(x.tolist(), y.tolist())
         except Exception as e:
-            raise RegressaoException(f"Erro na regressao linear: {str(e)}")
-        
-        # Mostrar resultados
-        logger.info("="*60)
+            raise RegressaoException(f"Erro na regressao linear: {e}") from e
+
+        qualidade = Config.validar_r2(r_squared)
+
+        logger.info("=" * 60)
         logger.info("RESULTADOS DA REGRESSAO LINEAR")
-        logger.info("="*60)
-        logger.info(f"Grupo X: '{prefixo_x}' com {len(x)} iteracoes")
-        logger.info(f"Grupo Y: '{prefixo_y}' com {len(y)} iteracoes")
-        logger.info(f"Equacao: y = {slope:.6f}x + {intercept:.6f}")
-        logger.info(f"Coeficiente Angular (m): {slope:.6f}")
-        logger.info(f"Coeficiente Linear (b): {intercept:.6f}")
-        logger.info(f"R2 (Coeficiente de Determinacao): {r_squared:.6f}")
-        
-        # Classificar qualidade do ajuste
-        if r_squared > 0.95:
-            qualidade = "Excelente (R2 > 0.95)"
-        elif r_squared > 0.85:
-            qualidade = "Bom (R2 > 0.85)"
-        elif r_squared > 0.70:
-            qualidade = "Moderado (R2 > 0.70)"
-        else:
-            qualidade = "Fraco (R2 < 0.70)"
-        
-        logger.info(f"Qualidade do ajuste: {qualidade}")
-        
+        logger.info("=" * 60)
+        logger.info(f"Grupo X : '{prefixo_x}' ({len(x)} pontos)")
+        logger.info(f"Grupo Y : '{prefixo_y}' ({len(y)} pontos)")
+        logger.info(f"Equacao : y = {slope:.6f}x + {intercept:.6f}")
+        logger.info(f"m (angular)  : {slope:.6f}")
+        logger.info(f"b (linear)   : {intercept:.6f}")
+        logger.info(f"R2           : {r_squared:.6f}")
+        logger.info(f"Qualidade    : {qualidade}")
+
+        # ---------------------------------------------------------------- #
+        #  Plotar                                                            #
+        # ---------------------------------------------------------------- #
         logger.info("Plotando grafico...")
-        # Plotar grafico
         PlotarGrafico(
-            set(zip(x, y)),
+            set(zip(x.tolist(), y.tolist())),
             x_err.tolist(),
             y_err.tolist(),
             slope=slope,
             intercept=intercept,
             str_x=ax_x,
             str_y=ax_y,
-            titulo=titulo
+            titulo=titulo,
         )
-        
         logger.info("Processo concluido com sucesso!")
-        
+
     except ArquivoInvalidoException as e:
-        logger.error(f"Erro de arquivo: {str(e)}")
+        logger.error(f"Erro de arquivo: {e}")
         sys.exit(1)
     except DadosInvalidosException as e:
-        logger.error(f"Erro nos dados: {str(e)}")
+        logger.error(f"Erro nos dados: {e}")
         sys.exit(1)
     except RegressaoException as e:
-        logger.error(f"Erro na regressao: {str(e)}")
+        logger.error(f"Erro na regressao: {e}")
         sys.exit(1)
     except Exception as e:
-        logger.exception(f"Erro inesperado durante o processamento: {str(e)}")
+        logger.exception(f"Erro inesperado: {e}")
         sys.exit(1)
 
 
+# --------------------------------------------------------------------------- #
+#  Modo GUI                                                                    #
+# --------------------------------------------------------------------------- #
 
-def modo_gui():
-    """
-    Executa o programa em modo interface grafica (GUI)
-    """
+def modo_gui() -> None:
+    """Inicia a interface grafica."""
     logger.info("Iniciando interface grafica...")
     try:
         from src.visualization.gui import iniciar_interface
         iniciar_interface()
     except Exception as e:
-        logger.exception(f"Erro ao iniciar interface grafica: {str(e)}")
+        logger.exception(f"Erro ao iniciar interface grafica: {e}")
         sys.exit(1)
 
 
-def main():
-    """
-    Funcao principal que decide qual modo executar
-    """
-    # Configurar logging
-    from src.data.config import setup_logging
-    setup_logging(nivel='INFO')
-    
-    parser = argparse.ArgumentParser(
-        description=f'{Config.APP_NAME} - {Config.APP_DESCRIPTION}',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog='''
-Exemplos de uso:
+# --------------------------------------------------------------------------- #
+#  Ponto de entrada                                                            #
+# --------------------------------------------------------------------------- #
 
-  # Modo GUI (interface grafica):
+def main() -> None:
+    setup_logging(nivel='INFO')
+
+    parser = argparse.ArgumentParser(
+        description=f"{Config.APP_NAME} - {Config.APP_DESCRIPTION}",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Exemplos:
+
+  # Interface grafica (padrao):
   python scalc.py
   python scalc.py --gui
 
-  # Modo CLI (linha de comando):
-  python scalc.py --cli --arquivo src/data/TBTeste.xlsx
-  python scalc.py --cli --arquivo dados.xlsx --x-label "Tempo (s)" --y-label "Distancia (m)"
-        '''
+  # Linha de comando:
+  python scalc.py --cli --arquivo dados.xlsx
+  python scalc.py --cli -f dados.xlsx --x-label "Tempo (s)" --y-label "Distancia (m)"
+        """,
     )
-    
-    parser.add_argument(
-        '--gui',
-        action='store_true',
-        help='Executar em modo interface grafica (padrao se nenhum argumento for fornecido)'
-    )
-    
-    parser.add_argument(
-        '--cli',
-        action='store_true',
-        help='Executar em modo linha de comando'
-    )
-    
-    parser.add_argument(
-        '--arquivo', '-f',
-        type=str,
-        help='Caminho para o arquivo Excel (obrigatorio no modo CLI)'
-    )
-    
-    parser.add_argument(
-        '--x-label',
-        type=str,
-        default='x',
-        help='Label do eixo X (padrao: "x")'
-    )
-    
-    parser.add_argument(
-        '--y-label',
-        type=str,
-        default='y',
-        help='Label do eixo Y (padrao: "y")'
-    )
-    
-    parser.add_argument(
-        '--titulo',
-        type=str,
-        default='Grafico de Dispersao com Regressao Linear',
-        help='Titulo do grafico'
-    )
-    
+
+    parser.add_argument('--gui',  action='store_true',
+                        help='Modo interface grafica (padrao)')
+    parser.add_argument('--cli',  action='store_true',
+                        help='Modo linha de comando')
+    parser.add_argument('--arquivo', '-f', type=str,
+                        help='Caminho para o arquivo Excel (obrigatorio no modo CLI)')
+    parser.add_argument('--x-label', type=str, default='x',
+                        help='Rotulo do eixo X (padrao: "x")')
+    parser.add_argument('--y-label', type=str, default='y',
+                        help='Rotulo do eixo Y (padrao: "y")')
+    parser.add_argument('--titulo', type=str,
+                        default='Grafico de Dispersao com Regressao Linear',
+                        help='Titulo do grafico')
+
     args = parser.parse_args()
-    
-    logger.info(f"SCalc versao {Config.APP_VERSION} iniciado")
-    
-    # Decidir qual modo executar
+    logger.info(f"SCalc {Config.APP_VERSION} iniciado")
+
     if args.cli:
-        # Modo CLI
         if not args.arquivo:
-            logger.error("No modo CLI, o argumento --arquivo e obrigatorio!")
+            logger.error("Modo CLI requer --arquivo/-f")
             parser.print_help()
             sys.exit(1)
-        
-        logger.info(f"Executando em modo CLI com arquivo: {args.arquivo}")
         modo_cli(
             path=args.arquivo,
             ax_x=args.x_label,
             ax_y=args.y_label,
-            titulo=args.titulo
+            titulo=args.titulo,
         )
     else:
-        # Modo GUI (padrao)
-        logger.info("Executando em modo GUI")
         modo_gui()
 
 
