@@ -109,13 +109,18 @@ class PyInstallerBuilder:
         # Hidden imports — pacotes que o PyInstaller não detecta
         # automaticamente por importação dinâmica ou sub-módulos.
         hidden_imports = [
+            # numpy
+            "numpy",
+            "numpy.random",
+            "numpy.core",
+            "numpy.lib",
             # scipy: sub-módulos usados por linregress
             "scipy.stats",
             "scipy.stats._stats_py",
             "scipy.linalg",
             "scipy.optimize",
             "scipy._lib.messagestream",
-            # pandas / numpy internos
+            # pandas
             "pandas._libs.tslibs.np_datetime",
             "pandas._libs.tslibs.nattype",
             "pandas._libs.tslibs.timedeltas",
