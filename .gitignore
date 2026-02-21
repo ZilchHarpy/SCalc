@@ -8,6 +8,8 @@ testes/
 .vscode/
 *.build/
 *.dist/
+*build/
+dist/
 __pypackages__/
 *.spec
 *.log
