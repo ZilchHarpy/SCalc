@@ -132,8 +132,28 @@ class InterfaceRegressaoLinear(QMainWindow):
         grupo_variaveis.setLayout(layout_variaveis)
         layout_esquerdo.addWidget(grupo_variaveis)
         
+        # Grupo: Plotar Pontos
+        grupo_plotar = QGroupBox("4. Plotar Pontos")
+        layout_plotar = QVBoxLayout()
+        
+        layout_plotar.addWidget(QLabel("Eixo X:"))
+        self.combo_plot_x = QComboBox()
+        layout_plotar.addWidget(self.combo_plot_x)
+        
+        layout_plotar.addWidget(QLabel("Eixo Y:"))
+        self.combo_plot_y = QComboBox()
+        layout_plotar.addWidget(self.combo_plot_y)
+        
+        self.btn_plotar_pontos = QPushButton("🎯 Plotar Pontos")
+        self.btn_plotar_pontos.clicked.connect(self.plotar_pontos)
+        self.btn_plotar_pontos.setEnabled(False)
+        layout_plotar.addWidget(self.btn_plotar_pontos)
+        
+        grupo_plotar.setLayout(layout_plotar)
+        layout_esquerdo.addWidget(grupo_plotar)
+        
         # Grupo: Acoes
-        grupo_acoes = QGroupBox("4. Acoes")
+        grupo_acoes = QGroupBox("5. Acoes")
         layout_acoes = QVBoxLayout()
         
         self.btn_calcular = QPushButton("🔢 Calcular Estatisticas")
@@ -315,18 +335,27 @@ class InterfaceRegressaoLinear(QMainWindow):
             self.combo_var_x.addItems(prefixos)
             self.combo_var_y.addItems(prefixos)
             
+            # Popular combos de plotar pontos
+            self.combo_plot_x.clear()
+            self.combo_plot_y.clear()
+            self.combo_plot_x.addItems(prefixos)
+            self.combo_plot_y.addItems(prefixos)
+            
             # Selecionar padrao (se houver pelo menos 2 prefixos)
             if len(prefixos) >= 2:
                 self.combo_var_x.setCurrentIndex(0)  # Primeiro prefixo para X
                 self.combo_var_y.setCurrentIndex(1)  # Segundo prefixo para Y
+                self.combo_plot_x.setCurrentIndex(0)
+                self.combo_plot_y.setCurrentIndex(1)
             
             # Mostrar estatisticas detalhadas
             self.mostrar_estatisticas_detalhadas()
             
-            self.texto_resultados.setText(f"✓ Estatisticas calculadas!\n\nVariaveis encontradas: {', '.join(prefixos)}\n\n⚠️ Selecione as variaveis X e Y e clique em 'Calcular Regressao Linear'.")
+            self.texto_resultados.setText(f"✓ Estatisticas calculadas!\n\nVariaveis encontradas: {', '.join(prefixos)}\n\n⚠️ Selecione as variaveis X e Y e clique em 'Calcular Regressao Linear' ou 'Plotar Pontos'.")
             
-            # Habilitar proximo botao
+            # Habilitar proximos botoes
             self.btn_regressao.setEnabled(True)
+            self.btn_plotar_pontos.setEnabled(True)
             
         except Exception as e:
             QMessageBox.critical(self, "Erro", f"Erro ao calcular estatisticas:\n{str(e)}")
@@ -468,6 +497,104 @@ class InterfaceRegressaoLinear(QMainWindow):
             QMessageBox.critical(self, "Erro", f"Erro ao calcular regressao:\n{str(e)}")
             self.texto_resultados.setText(f"❌ Erro ao calcular regressao:\n{str(e)}")
     
+    def plotar_pontos(self):
+        """Plota os pontos sem regressao linear"""
+        if not self.medias or not self.dados_brutos:
+            QMessageBox.warning(self, "Aviso", "Por favor, calcule as estatisticas primeiro!")
+            return
+        
+        try:
+            # Obter prefixos selecionados
+            prefixo_x = self.combo_plot_x.currentText()
+            prefixo_y = self.combo_plot_y.currentText()
+            
+            if not prefixo_x or not prefixo_y:
+                QMessageBox.warning(self, "Aviso", "Selecione as variaveis X e Y!")
+                return
+            
+            if prefixo_x == prefixo_y:
+                QMessageBox.warning(self, "Aviso", "As variaveis X e Y devem ser diferentes!")
+                return
+            
+            # Validar se os prefixos existem
+            if prefixo_x not in self.dados_brutos or prefixo_y not in self.dados_brutos:
+                QMessageBox.warning(self, "Aviso", "Uma ou ambas as variaveis nao foram encontradas nos dados!")
+                return
+            
+            # Extrair dados para plotar
+            x_values = []
+            y_values = []
+            x_errs = []
+            y_errs = []
+            
+            # Processar variável X
+            chaves_x = sorted(self.dados_brutos[prefixo_x].keys())
+            for chave in chaves_x:
+                valores = self.dados_brutos[prefixo_x][chave]
+                if valores:
+                    media = sum(valores) / len(valores)
+                    x_values.append(media)
+                    erro = self.err_total.get(chave, 0.0)
+                    x_errs.append(erro)
+            
+            # Processar variável Y
+            chaves_y = sorted(self.dados_brutos[prefixo_y].keys())
+            for chave in chaves_y:
+                valores = self.dados_brutos[prefixo_y][chave]
+                if valores:
+                    media = sum(valores) / len(valores)
+                    y_values.append(media)
+                    erro = self.err_total.get(chave, 0.0)
+                    y_errs.append(erro)
+            
+            # Validar dados
+            if len(x_values) != len(y_values):
+                QMessageBox.warning(self, "Aviso", f"As variaveis devem ter a mesma quantidade de iteracoes! X={len(x_values)}, Y={len(y_values)}")
+                return
+            
+            # Converter para arrays
+            data_x = np.array(x_values)
+            data_y = np.array(y_values)
+            data_x_err = np.array(x_errs)
+            data_y_err = np.array(y_errs)
+            
+            # Limpar canvas
+            self.canvas.axes.clear()
+            
+            # Plotar pontos com barras de erro
+            self.canvas.axes.errorbar(
+                data_x, data_y,
+                xerr=data_x_err,
+                yerr=data_y_err,
+                fmt='o',
+                color='blue',
+                ecolor='darkblue',
+                capsize=5,
+                markersize=8,
+                label='Dados experimentais',
+                zorder=5
+            )
+            
+            # Configuracoes do grafico
+            self.canvas.axes.set_xlabel(self.entrada_x.text(), fontsize=12)
+            self.canvas.axes.set_ylabel(self.entrada_y.text(), fontsize=12)
+            self.canvas.axes.set_title(f"Pontos: {prefixo_x} vs {prefixo_y}", fontsize=14, fontweight='bold')
+            self.canvas.axes.legend(loc='best', fontsize=10)
+            self.canvas.axes.grid(True, alpha=0.3, linestyle='--')
+            
+            # Ajustar layout
+            self.canvas.fig.tight_layout()
+            self.canvas.draw()
+            
+            self.texto_resultados.append(f"\n✓ Pontos plotados: {prefixo_x} vs {prefixo_y}")
+            
+            # Mudar para tab do grafico
+            self.tabs.setCurrentIndex(0)
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Erro", f"Erro ao plotar pontos:\n{str(e)}")
+            self.texto_resultados.setText(f"❌ Erro ao plotar pontos:\n{str(e)}")
+    
     def plotar_grafico(self):
         """Plota o grafico com regressao linear"""
         if self.data_x is None or self.data_y is None:
@@ -557,6 +684,8 @@ class InterfaceRegressaoLinear(QMainWindow):
             self.texto_estatisticas.clear()
             self.combo_var_x.clear()
             self.combo_var_y.clear()
+            self.combo_plot_x.clear()
+            self.combo_plot_y.clear()
             self.tabela_dados.clear()
             self.tabela_dados.setRowCount(0)
             self.tabela_dados.setColumnCount(0)
@@ -565,6 +694,7 @@ class InterfaceRegressaoLinear(QMainWindow):
             self.btn_calcular.setEnabled(False)
             self.btn_regressao.setEnabled(False)
             self.btn_plotar.setEnabled(False)
+            self.btn_plotar_pontos.setEnabled(False)
             
             # Plotar grid inicial
             self.plotar_grid_inicial()
