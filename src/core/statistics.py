@@ -8,6 +8,7 @@ e erro total a partir de dados em DataFrame.
 import logging
 import math
 import pandas as pd
+import pandas as _pd  # alias usado internamente em particionar()
 from collections import defaultdict
 
 from src.utils.parsers import eh_erro_instrumental, extrair_prefixo
@@ -215,7 +216,6 @@ def particionar(tabela: pd.DataFrame):
                     val = tabela.at[idx, coluna]
                     if idx_limpo >= len(lista_dados):
                         break
-                    import pandas as _pd
                     if not _pd.isna(val):
                         dados_iteracoes[lista_dados[idx_limpo]].append(float(val))
                     idx_limpo += 1
