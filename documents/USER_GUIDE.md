@@ -73,7 +73,7 @@ python scalc.py
 
 A janela que abre é dividida em dois painéis:
 
-![SCalc UI standart](./SCalc_UI_std.png)
+![SCalc UI standart](../assets/SCalc_UI_std.png)
 
 O painel esquerdo tem os controles. O painel direito mostra o gráfico, os dados e as estatísticas em abas separadas. Você pode arrastar a divisória entre os dois painéis para redimensioná-los.
 
@@ -162,7 +162,7 @@ y = 0.678187·x + -0.210542
 
 Clique em **🎨 Plotar Gráfico**. O gráfico aparece na aba **📊 Gráfico**:
 
-![SCalc UI Linear Regression](./SCalc_UI_reg.png)
+![SCalc UI Linear Regression](../assets/SCalc_UI_reg.png)
 
 Cada ponto tem uma barra de erro horizontal (erro em X) e uma barra vertical (erro em Y), as vezes uma ou outra não são perceptíveis por padrão.
 
