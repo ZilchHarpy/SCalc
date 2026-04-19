@@ -18,6 +18,10 @@ Referência técnica completa do projeto. Destinada a desenvolvedores que queira
 10. [Extensibilidade](#extensibilidade)
 11. [Dependências](#dependências)
 
+
+**Documentação complementar:**
+- [USER_GUIDE.md](USER_GUIDE.md) — Guia do usuário para utilização prática
+
 ---
 
 ## Visão geral da arquitetura
@@ -78,11 +82,12 @@ SCalc/
 │   │
 │   ├── visualization/
 │   │   ├── __init__.py          # Exporta: PlotarGrafico
+│   │   │                        # (iniciar_interface deve ser importado diretamente)
 │   │   ├── gui.py               # InterfaceRegressaoLinear (PySide6)
 │   │   └── plots.py             # PlotarGrafico() para modo CLI
 │   │
 │   ├── data/
-│   │   ├── __init__.py
+│   │   ├── __init__.py          # Não exporta nada (config.py deve ser importado diretamente)
 │   │   └── config.py            # Classe Config + setup_logging()
 │   │
 │   └── utils/
@@ -234,6 +239,8 @@ erros_instrumentais = {
 }
 dados_keys = {'a': 2, 'b': 2}
 ```
+
+**Independência de ordem de colunas:** O algoritmo em duas passagens garante que a ordem das colunas no Excel não afeta o resultado. Por exemplo, tanto `Dados | I_err | a | b` quanto `I_err | Dados | b | a` produzem o mesmo mapeamento posicional, evitando erros de associação incorreta de erros instrumentais.
 
 **Raises:**
 - `DadosInvalidosException` — DataFrame vazio, só NaN, ou nenhum dado numérico válido após o particionamento
@@ -402,6 +409,10 @@ Config
     ├── ARQUIVO_LOG = <project_root>/logs/scalc.log
     ├── MAX_BYTES = 10 MB
     └── BACKUP_COUNT = 3
+
+├── Config.I18n  # Reservado para suporte futuro de internacionalização
+    ├── IDIOMAS_DISPONIVEIS = ['pt_BR', 'en_US']
+    └── IDIOMA_PADRAO = 'pt_BR'
 ```
 
 **Métodos de classe:**
@@ -440,6 +451,17 @@ regressao()   │ btn_plotar=enabled
 **`MplCanvas(FigureCanvas)`** — widget interno que embute um `Figure` do Matplotlib no Qt via `matplotlib.backends.backend_qtagg`. A barra de ferramentas é `NavigationToolbar2QT`.
 
 **`iniciar_interface()`** — função exportada que cria `QApplication`, aplica estilo `'Fusion'`, instancia `InterfaceRegressaoLinear` e entra no loop de eventos com `sys.exit(app.exec())`.
+
+**Métodos auxiliares da GUI:**
+
+- **`_on_var_x_changed(texto: str)`** — Preenche automaticamente o rótulo do eixo X baseado na variável selecionada no dropdown X
+- **`_on_var_y_changed(texto: str)`** — Preenche automaticamente o rótulo do eixo Y baseado na variável selecionada no dropdown Y  
+- **`_resetar_estado_regressao()`** — Limpa resultados de regressão quando uma nova variável é selecionada
+- **`plotar_grid_inicial()`** — Desenha grade vazia no canvas antes do carregamento de dados
+- **`mostrar_dados_tabela()`** — Popula a aba "Dados" com estatísticas calculadas
+- **`_set_status(mensagem: str, tipo: str)`** — Atualiza label de status com diferentes níveis de severidade (info, warn, erro)
+
+**Seleção automática de variáveis:** A GUI seleciona automaticamente os dois primeiros grupos alfabéticos como X e Y, preenchendo os dropdowns e rótulos correspondentes.
 
 ---
 

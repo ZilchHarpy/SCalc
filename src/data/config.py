@@ -13,7 +13,7 @@ class Config:
     
     # ============ INFORMACOES DO PROJETO ============
     APP_NAME = "SCalc"
-    APP_VERSION = "1.0.0"
+    APP_VERSION = "1.0.1"
     APP_AUTHOR = "Caio Aquilino Merino"
     APP_DESCRIPTION = "Sistema de Calculo e Analise de Regressao Linear"
     
@@ -35,12 +35,12 @@ class Config:
         FIGURE_HEIGHT = 6
         FIGURE_DPI = 100
         
-        # Cores
+        # Cores padrao
         COLOR_PONTOS = 'blue'
         COLOR_ERRO = 'red'
         COLOR_REGRESSAO = 'green'
         
-        # Espessuras
+        # Espessuras e tamanhos padrao
         LINEWIDTH_REGRESSAO = 2.0
         MARKERSIZE_PONTOS = 6
         CAPSIZE_ERRO = 5
@@ -48,7 +48,7 @@ class Config:
         # Labels padrao
         DEFAULT_X_LABEL = "x"
         DEFAULT_Y_LABEL = "y"
-        DEFAULT_TITULO = "Grafico de Dispersao com Regressao Linear"
+        DEFAULT_TITULO = "Grafico x vs y"
         
         # Formatos de exportacao suportados
         FORMATOS_EXPORTACAO = ['png', 'pdf', 'svg', 'jpg', 'eps']

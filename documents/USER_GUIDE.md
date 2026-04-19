@@ -1,6 +1,6 @@
 # SCalc — Guia do Usuário
 
-Bem-vindo ao SCalc. Este guia mostra tudo que você precisa saber para usar o programa do início ao fim, sem precisar saber programação.
+Bem-vindo ao SCalc! Este guia mostra tudo que você precisa saber para usar o programa do início ao fim, sem precisar saber programação e até mesmo sem saber estatística (uau!).
 
 ---
 
@@ -12,15 +12,17 @@ O SCalc recebe uma planilha Excel com medições experimentais e, a partir dela:
 2. Traça a **reta que melhor representa** a relação entre duas grandezas (regressão linear)
 3. Gera um **gráfico** com os pontos, as barras de erro e a reta ajustada
 
+Incrível, não?
+
 ---
 
 ## Antes de começar: preparando sua planilha
 
-O SCalc espera um formato específico de planilha. Montar a tabela corretamente é a parte mais importante.
+O SCalc espera um formato específico de planilha. Montar a tabela corretamente é parte fundamental da correta utilização do software, então abaixo está tudo o que você precisa saber para começar (relaxa, não é nada difícil, pode confiar).
 
 ### Estrutura da tabela
 
-Sua planilha deve ter as seguintes colunas, **nesta ordem**:
+Sua planilha deve ter as seguintes colunas, **necessariamente nesta ordem de colunas**:
 
 | Dados | I\_err | 1    | 2    | 3    |
 |-------|--------|------|------|------|
@@ -30,18 +32,22 @@ Sua planilha deve ter as seguintes colunas, **nesta ordem**:
 | b\_1  | 0.10   | 2.41 | 2.45 | 2.39 |
 | b\_2  | 0.10   | 4.60 | 4.65 | 4.58 |
 | b\_3  | 0.10   | 6.90 | 6.95 | 6.88 |
+| c\_1  | 0.15   | 7.12 | 7.20 | 6.96 |
+| c\_2  | 0.15   | 8.93 | 9.07 | 9.01 |
+| c\_3  | 0.15   | 9.78 | 9.86 | 9.86 |
 
 ### O que significa cada coluna
 
-**Coluna `Dados`** — identifica cada ponto de medição. O nome tem duas partes: uma letra (ou palavra) que representa a grandeza física, e um número que representa qual ponto é esse. Os dois são separados por `_`.
+**Coluna `Dados`** — identifica cada ponto de medição. O nome tem duas partes: uma letra (ou palavra) que representa a grandeza do dado medido, e um número que representa qual ponto é esse. Os dois são  (e precisam ser) separados por `_`.
 
 - `a_1`, `a_2`, `a_3` são três pontos da grandeza `a`
 - `b_1`, `b_2`, `b_3` são três pontos da grandeza `b`
+- `c_1`, `c_2`, `c_3` são três pontos da grandeza `c`
 - Você pode usar qualquer nome: `tensao_1`, `corrente_2`, `temperatura_3`, etc.
 
-**Coluna `I_err`** — o erro do instrumento usado para medir aquele ponto. Se o seu voltímetro tem precisão de ±0,05 V, coloque `0.05`. Cada linha pode ter um erro diferente.
+**Coluna `I_err`** — o erro do instrumento usado para medir aquele ponto. Por exemplo, se o seu voltímetro tem precisão de ±0,05 V, coloque `0.05`. Cada linha pode ter um erro diferente, pois o instrumento de medida (e consequentemente sua precisão) pode variar, por exemplo, se eu estiver medindo um ponto com um paquímetro (erro de ±0,05 mm) e outro com um micrômetro (erro de ±0,01 mm).
 
-**Colunas `1`, `2`, `3`, ...** — as repetições da medição. Se você mediu o mesmo ponto três vezes, cada medição vai em uma coluna. O SCalc calcula automaticamente a média e o espalhamento entre elas.
+**Colunas `1`, `2`, `3`, ...** — as repetições da medição. Se você mediu o mesmo ponto três vezes, cada medição vai em uma coluna. O SCalc calcula automaticamente a média e o espalhamento entre elas. Então se eu calculei o tempo de queda de uma massa de uma mesma altura fixa 5 vezes, são 5 colunas que devo colocar.
 
 ### Regras importantes
 
@@ -59,7 +65,7 @@ Se o seu experimento mediu três grandezas (por exemplo, tempo, distância e tem
 
 ## Abrindo o programa
 
-Execute no terminal:
+Existem duas principais maneiras de utilizar o software, pelo terminal e pelo executável. No segundo caso a janela é aberta automaticamente, mas no caso do terminal, é necessário que execute:
 
 ```
 python scalc.py
@@ -67,18 +73,7 @@ python scalc.py
 
 A janela que abre é dividida em dois painéis:
 
-```
-┌──────────────────────────┬──────────────────────────────────────────────┐
-│   PAINEL DE CONTROLE     │             PAINEL DE VISUALIZAÇÃO           │
-│                          │                                              │
-│  1. Carregar Arquivo     │  ┌─────────────┬──────────┬──────────────┐  │
-│  2. Configurar Eixos     │  │  📊 Gráfico │ 📄 Dados │ 📈 Estatíst  │  │
-│  3. Selecionar Variáveis │  └─────────────┴──────────┴──────────────┘  │
-│  4. Ações                │                                              │
-│                          │         (gráfico aparece aqui)              │
-│  📋 Resultados           │                                              │
-└──────────────────────────┴──────────────────────────────────────────────┘
-```
+![SCalc UI standart](./SCalc_UI_std.png)
 
 O painel esquerdo tem os controles. O painel direito mostra o gráfico, os dados e as estatísticas em abas separadas. Você pode arrastar a divisória entre os dois painéis para redimensioná-los.
 
@@ -96,7 +91,7 @@ Clique no botão **📁 Selecionar Arquivo Excel** e navegue até sua planilha `
 
 ### Passo 2 — Calcular estatísticas
 
-Clique em **🔢 Calcular Estatísticas**.
+Em 'Ações', clique em **🔢 Calcular Estatísticas**.
 
 O programa vai:
 - Identificar os grupos na coluna `Dados` (ex: `a` e `b`)
@@ -111,12 +106,17 @@ As estatísticas completas aparecem na aba **📈 Estatísticas** no painel dire
 
 ### Passo 3 — Selecionar as variáveis
 
-Use os dois dropdowns que aparecem em **3. Selecionar Variáveis**:
+Use os dois dropdowns que aparecem em **2. Selecionar Variáveis**:
 
-- **Variável X** — a grandeza que você quer no eixo horizontal (a causa, a variável que você controla)
-- **Variável Y** — a grandeza que você quer no eixo vertical (o efeito, a variável que você mede)
+- **Variável X (independente)** — a grandeza que você quer no eixo horizontal (a causa, a variável que você controla)
+- **Variável Y (dependente)** — a grandeza que você quer no eixo vertical (o efeito, a variável que você mede)
 
 Por padrão, o programa seleciona automaticamente o primeiro grupo para X e o segundo para Y.
+
+## Passo 3.5 (Opcional)
+
+Após selecionar as variáveis, já é possível plotar o gráfico.
+Para isso, clique no botão **🎨 Plotar Gráfico** e veja a mágica acontecer na aba **📊 Gráfico**!
 
 ---
 
@@ -124,19 +124,28 @@ Por padrão, o programa seleciona automaticamente o primeiro grupo para X e o se
 
 Clique em **📈 Calcular Regressão Linear**.
 
-No painel de resultados (parte inferior do painel esquerdo) você verá algo como:
+No painel de **📋 Resultados** (parte inferior do painel esquerdo) você verá algo como o exemplo abaixo:
 
 ```
-Equação: y = 2.153x + 0.024
-Coeficiente Angular (m): 2.153
-Coeficiente Linear (b): 0.024
-R² (Coeficiente de Determinação): 0.9934
-✓ Excelente ajuste (R² > 0.95)
+==================================================
+REGRESSÃO LINEAR
+==================================================
+
+X: x   |   Y: F
+Iterações: 8
+
+y = 0.678187·x + -0.210542
+
+  m (coef. angular): 0.678187
+  b (coef. linear):  -0.210542
+  R²:                0.994449
+
+✓ Excelente ajuste (R² > 0,95)
 ```
 
 **O que significa cada número:**
 
-**Equação `y = mx + b`** — a reta que melhor representa seus dados. Se `m = 2.153`, significa que para cada unidade que X aumenta, Y aumenta aproximadamente 2.153 unidades.
+**Equação `y = mx + b`** — a reta que melhor representa seus dados, onde `m` e `b` são os coeficientes angular e linear, respectivamente.
 
 **R² (pronuncia-se "R ao quadrado")** — mede o quão bem a reta se encaixa nos seus pontos. Vai de 0 a 1:
 
@@ -153,20 +162,9 @@ R² (Coeficiente de Determinação): 0.9934
 
 Clique em **🎨 Plotar Gráfico**. O gráfico aparece na aba **📊 Gráfico**:
 
-```
-  Y │
-    │                               ●
-    │                          ●  ╱
-    │                      ●  ╱
-    │                  ●  ╱       ● = ponto experimental
-    │              ●  ╱               com barras de erro
-    │          ●  ╱
-    │      ●  ╱                   ╱ = reta de regressão
-    │  ●  ╱                           y = mx + b
-    └─────────────────────────────────── X
-```
+![SCalc UI Linear Regression](./SCalc_UI_reg.png)
 
-Cada ponto tem uma barra de erro horizontal (erro em X) e uma barra vertical (erro em Y).
+Cada ponto tem uma barra de erro horizontal (erro em X) e uma barra vertical (erro em Y), as vezes uma ou outra não são perceptíveis por padrão.
 
 ---
 
@@ -236,3 +234,7 @@ Em servidores ou conexões SSH sem interface gráfica, o Matplotlib não consegu
 
 **O arquivo não carrega.**
 Certifique-se de que o arquivo é `.xlsx` (não `.xls` antigo ou `.csv`) e de que não está aberto em outro programa como o Excel.
+
+
+**Possui outra dúvida?**
+Entre em contato pelo github ou pelo email "caioaquilinomerino@gmail.com"
